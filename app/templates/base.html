@@ -2,24 +2,26 @@
 <html lang="en">
   <head>
     <title>{% block title %}{% endblock %}</title>
-    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://getbootstrap.com/examples/jumbotron-narrow/jumbotron-narrow.css" rel="stylesheet">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">  
   </head>
   <body>
     <div class="container">
       <div class="header clearfix">
         <nav>
           <ul class="nav nav-pills pull-right">
-            <li role="presentation"><a href="/">Home</a></li>
+            <li style = "float:left !important" ><a href="/">SportStat</a></li>
             <li role="presentation"><a href="/about">About</a></li>
-            <li role="presentation"><a href="/hello">Hello</a></li>
+            <li role="presentation"><a href="/stream">Streaming</a></li>
+            <li role="presentation"><a href="/pay">Payment</a></li>
+            <li role="presentation"><a href="/teams">Teams</a></li>
+            <li style = "float:right" role="presentation" ><a href="/hello">Sign up</a></li>
           </ul>
         </nav>
       </div>
       {% block body %}
       {% endblock %}
       <footer class="footer">
-        <p>&copy; 2016 Your Name Here</p>
+        <p>&copy; 2018 Karina Kozarova</p>
       </footer>
     </div> 
   </body>
