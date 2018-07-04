@@ -25,6 +25,17 @@ def payment():
 def teams():
    return render_template("teams.html")
 
+@app.route('/register_team')
+def register_team():
+   conn = sqlite3.connect("test.db")
+   c = conn.cursor()
+   # create_table_for_teams(c,conn)
+   return render_template("register_team.html")
+
+@app.route('/team_stats')
+def team_stats():
+   return render_template("team_stats.html")
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     error = None
@@ -53,13 +64,8 @@ def register():
         conn = sqlite3.connect("test.db")
         c = conn.cursor()
      
-        # c.execute(""" CREATE TABLE Users(
-        #     name text,
-        #     email text,
-        #     password text,
-        #     role text
-        # )""")
-        
+        create_table_for_users(c,conn)
+
         name = request.form['name']
         password = request.form['password']
         email = request.form['email']
@@ -68,11 +74,26 @@ def register():
         if form.validate():
             c.execute("INSERT INTO {} VALUES(?, ?, ?, ?)".format("Users"), (name,email,password,role))
             conn.commit()
-            flash('Thanks for registration ' + name)
             return render_template("signed_in.html")
         else:
             flash('Error: All the form fields are required. Mail must be at least 6 chars and the password - at least 3')
     return render_template('register.html', form=form)
 
 
+def create_table_for_users(c,conn):
+    c.execute(""" CREATE TABLE Users(
+        id int AUTOINCREMENT,
+        name text,
+        email text,
+        password text,
+        role text
+    )""")
+    conn.commit()
 
+
+def create_table_for_teams(c,conn):
+    c.execute("""
+        CREATE TABLE Teams(
+        team_name text,
+        country text)""")
+    conn.commit()
