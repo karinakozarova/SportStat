@@ -52,16 +52,22 @@ def register():
 
         conn = sqlite3.connect("test.db")
         c = conn.cursor()
-
+     
+        # c.execute(""" CREATE TABLE Users(
+        #     name text,
+        #     email text,
+        #     password text,
+        #     role text
+        # )""")
+        
         name = request.form['name']
         password = request.form['password']
         email = request.form['email']
+        role = request.form['options']
 
         if form.validate():
-            c.execute("INSERT INTO {} VALUES(?, ?, ?)".format("Users"), (name,email,password))
-            flash('Successfully registered! ' + name + password + email)
+            c.execute("INSERT INTO {} VALUES(?, ?, ?, ?)".format("Users"), (name,email,password,role))
             conn.commit()
-
             flash('Thanks for registration ' + name)
             return render_template("signed_in.html")
         else:
