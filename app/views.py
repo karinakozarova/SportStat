@@ -17,6 +17,10 @@ def index():
 def stream():
    return render_template("stream.html")
 
+@app.route('/calendar')
+def calendar():
+   return render_template("calendar.html")
+
 @app.route('/pay')
 def payment():
    return render_template("pay.html")
@@ -27,7 +31,6 @@ def test_route():
     conn = sqlite3.connect("test.db")
     c = conn.cursor()
     c.execute("select team_name from Teams")
-
     teams = []
     names = []
     countries = []
@@ -119,6 +122,7 @@ def register():
 
 
 def create_table_for_users(c,conn):
+    c.execute("DROP TABLE Teams")
     c.execute(""" CREATE TABLE Users(
         id int AUTOINCREMENT,
         name text,
@@ -130,6 +134,7 @@ def create_table_for_users(c,conn):
 
 
 def create_table_for_teams(c,conn):
+    c.execute("DROP TABLE Teams")
     c.execute("""
         CREATE TABLE Teams(
         team_name text,
