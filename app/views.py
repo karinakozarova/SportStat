@@ -1,9 +1,11 @@
 from flask import Flask,render_template, redirect, url_for, request, flash
 from app import app
 from wtforms import Form, TextField, TextAreaField, validators, StringField, SubmitField
-
+import logging
 import sqlite3
 
+
+# logging.basicConfig(filename='app_log.log', level=logging.DEBUG,format='%(asctime)s:%(message)s')
 
 
 @app.route('/')
@@ -33,14 +35,13 @@ def payment():
 def teams():
    return render_template("teams.html")
 
-
-# Route for handling the login page logic
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     error = None
     if request.method == 'POST':
-    	# hardcoded values for username and password
-        if request.form['username'] != 'admin' or request.form['password'] != 'admin':
+        username = request.form['username']
+        password = request.form['password']
+        if  username != 'admin' or password != 'admin':
             error = 'Invalid Credentials. Please try again.'
         else:
     		return render_template("signed_in.html")
@@ -53,35 +54,29 @@ class ReusableForm(Form):
     password = TextField('Password:', validators=[validators.required(), validators.Length(min=3, max=35)])
  
 @app.route("/register", methods=['GET', 'POST'])
-def hello():
-
-
+def register():
     form = ReusableForm(request.form)
  
     print form.errors
     if request.method == 'POST':
+
         conn = sqlite3.connect("test.db")
         c = conn.cursor()
 
-        name=request.form['name']
-        password=request.form['password']
-        email=request.form['email']
-        print name, " ", email, " ", password
-
+        name = request.form['name']
+        password = request.form['password']
+        email = request.form['email']
 
 
         if form.validate():
             c.execute("INSERT INTO {} VALUES(?, ?, ?)".format("Users"), (name,email,password))
             flash('Successfully registered! ' + name + password + email)
             conn.commit()
-            conn.close()
 
             flash('Thanks for registration ' + name)
             return render_template("signed_in.html")
         else:
-            flash('Error: All the form fields are required.')
-            
-    conn.close()
+            flash('Error: All the form fields are required. Mail must be at least 6 chars and the password - at least 3')
     return render_template('register.html', form=form)
 
 
