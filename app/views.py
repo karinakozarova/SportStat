@@ -25,19 +25,32 @@ def payment():
 def teams():
    return render_template("teams.html")
 
-@app.route('/register_team')
+@app.route('/register_team', methods=['GET', 'POST'])
 def register_team():
-    # conn = sqlite3.connect("test.db")
-    # c = conn.cursor()
-    # # create_table_for_teams(c,conn)
+    form = TeamsForm(request.form)
+ 
+    print form.errors
+    if request.method == 'POST':
+        conn = sqlite3.connect("test.db")
+        c = conn.cursor()
+     
+        name = request.form['name']
+        country = request.form['country']
 
-    # teamname = request.form['name']
-    # country = request.form['country']
-
-    # c.execute("INSERT INTO {} VALUES(?, ?)".format("Teams"), (teamname,country))
-    # conn.commit()
-    return render_template("register_team.html")
-
+        if form.validate():
+            c.execute("INSERT INTO {} VALUES(?, ?)".format("Teams"), (name,country))
+            conn.commit()
+            c.execute("SELECT * FROM Teams")
+            while True:
+                res = c.fetchone()
+                if res is None:
+                    break
+                else:
+                    print(res)
+        else:
+            flash('Error: All the form fields are required.')
+ 
+    return render_template('register_team.html', form=form)
 
 @app.route('/team_stats')
 def team_stats():
@@ -60,6 +73,10 @@ class ReusableForm(Form):
     name = TextField('Name:', validators=[validators.required()])
     email = TextField('Email:', validators=[validators.required(), validators.Length(min=6, max=35)])
     password = TextField('Password:', validators=[validators.required(), validators.Length(min=3, max=35)])
+ 
+class TeamsForm(Form):
+    name = TextField('Name:', validators=[validators.required()])
+    country = TextField('Country:',validators=[validators.required()])
  
 @app.route("/register", methods=['GET', 'POST'])
 def register():
