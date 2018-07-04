@@ -27,10 +27,17 @@ def teams():
 
 @app.route('/register_team')
 def register_team():
-   conn = sqlite3.connect("test.db")
-   c = conn.cursor()
-   # create_table_for_teams(c,conn)
-   return render_template("register_team.html")
+    # conn = sqlite3.connect("test.db")
+    # c = conn.cursor()
+    # # create_table_for_teams(c,conn)
+
+    # teamname = request.form['name']
+    # country = request.form['country']
+
+    # c.execute("INSERT INTO {} VALUES(?, ?)".format("Teams"), (teamname,country))
+    # conn.commit()
+    return render_template("register_team.html")
+
 
 @app.route('/team_stats')
 def team_stats():
@@ -64,7 +71,7 @@ def register():
         conn = sqlite3.connect("test.db")
         c = conn.cursor()
      
-        create_table_for_users(c,conn)
+        # create_table_for_users(c,conn)
 
         name = request.form['name']
         password = request.form['password']
