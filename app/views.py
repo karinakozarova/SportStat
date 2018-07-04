@@ -22,8 +22,29 @@ def payment():
    return render_template("pay.html")
 
 @app.route('/teams')
-def teams():
-   return render_template("teams.html")
+def test_route():
+
+    conn = sqlite3.connect("test.db")
+    c = conn.cursor()
+    c.execute("select team_name from Teams")
+
+    teams = []
+    names = []
+    countries = []
+    i = 0
+    while True:
+        res = c.fetchone()
+        if res is None:
+            break
+        else:
+            teams.append(res)
+            names.append(res[0])
+            stringRes = ''.join(res)
+            # print stringRes[stringRes.index("u"):]
+            print teams[i]
+        i += 1
+
+    return render_template('teams.html', teams=teams,names=names,countries = countries)
 
 @app.route('/register_team', methods=['GET', 'POST'])
 def register_team():
@@ -40,13 +61,6 @@ def register_team():
         if form.validate():
             c.execute("INSERT INTO {} VALUES(?, ?)".format("Teams"), (name,country))
             conn.commit()
-            c.execute("SELECT * FROM Teams")
-            while True:
-                res = c.fetchone()
-                if res is None:
-                    break
-                else:
-                    print(res)
         else:
             flash('Error: All the form fields are required.')
  
