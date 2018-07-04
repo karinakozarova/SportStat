@@ -9,19 +9,9 @@ import sqlite3
 
 
 @app.route('/')
+@app.route('/about')
 def index():
     return render_template("index.html")
-
-
-@app.route('/about')
-def about():
-    return render_template("index.html")
-
-
-@app.route('/hello')
-def hello_world():
-   return render_template("hello.html")
-
 
 @app.route('/stream')
 def stream():
@@ -66,7 +56,6 @@ def register():
         name = request.form['name']
         password = request.form['password']
         email = request.form['email']
-
 
         if form.validate():
             c.execute("INSERT INTO {} VALUES(?, ?, ?)".format("Users"), (name,email,password))
