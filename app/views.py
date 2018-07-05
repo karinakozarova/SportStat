@@ -4,7 +4,6 @@ from wtforms import Form, TextField, TextAreaField, validators, StringField, Sub
 import logging
 import sqlite3
 
-
 # logging.basicConfig(filename='app_log.log', level=logging.DEBUG,format='%(asctime)s:%(message)s')
 
 
@@ -78,11 +77,13 @@ def login():
     error = None
     if request.method == 'POST':
         username = request.form['username']
-        password = request.form['password']
-        if  username != 'admin' or password != 'admin':
-            error = 'Invalid Credentials. Please try again.'
+        password_input = request.form['password']
+        if get_password(username) == password_input:
+            print "SUCCESS"
+            print is_coach(username)
+            return render_template("competitor.html")
         else:
-    		return render_template("signed_in.html")
+            error = 'Invalid Credentials. Please try again.' 
     return render_template('login.html', error=error)
 
 
@@ -110,12 +111,15 @@ def register():
         name = request.form['name']
         password = request.form['password']
         email = request.form['email']
-        role = request.form['options']
+        role = request.form['options'] # coach - 1, competitor - 2
 
         if form.validate():
             c.execute("INSERT INTO {} VALUES(?, ?, ?, ?)".format("Users"), (name,email,password,role))
             conn.commit()
-            return render_template("signed_in.html")
+            if is_coach(name):
+                return render_template("signed_in.html")
+            else:
+                return render_template("competitor.html", loggedin = True)
         else:
             flash('Error: All the form fields are required. Mail must be at least 6 chars and the password - at least 3')
     return render_template('register.html', form=form)
@@ -128,7 +132,7 @@ def create_table_for_users(c,conn):
         name text,
         email text,
         password text,
-        role text
+        role text # coach - 1, competitor - 2
     )""")
     conn.commit()
 
@@ -140,3 +144,21 @@ def create_table_for_teams(c,conn):
         team_name text,
         country text)""")
     conn.commit()
+
+
+def get_password(username):
+    conn = sqlite3.connect("test.db")
+    c = conn.cursor()
+    c.execute("Select password from Users where name = '{}'".format(username))
+    res = str(c.fetchone())
+    res = res[3:-3]
+
+    return res
+
+def is_coach(username):
+    conn = sqlite3.connect("test.db")
+    c = conn.cursor()
+    c.execute("Select role from Users where name = '{}'".format(username))
+    res = str(c.fetchone())
+    if res == "1": return True
+    return False

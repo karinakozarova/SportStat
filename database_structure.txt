@@ -1,0 +1,20 @@
+Users
+ 	id 
+    name 
+	email 
+    password 
+    role 
+
+Teams
+	id 
+	name
+	country
+
+
+CoachTeams
+	CoachId 
+	TeamId
+
+
+
+
