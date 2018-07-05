@@ -45,6 +45,10 @@ def payment():
     print is_logged_in
     return render_template("pay.html")
 
+@app.route('/team_stats')
+def team_stats():
+   return render_template("team_stats.html")
+
 @app.route('/teams')
 def test_route():
     conn = sqlite3.connect("test.db")
@@ -69,12 +73,12 @@ def test_route():
 @app.route('/register_team', methods=['GET', 'POST'])
 def register_team():
     form = TeamsForm(request.form)
- 
     print form.errors
     if request.method == 'POST':
         conn = sqlite3.connect("test.db")
         c = conn.cursor()
-     
+        create_table_for_teams(c,conn)
+
         name = request.form['name']
         country = request.form['country']
 
@@ -87,9 +91,13 @@ def register_team():
         print is_logged_in
     return render_template('register_team.html', form=form)
 
-@app.route('/team_stats')
-def team_stats():
-   return render_template("team_stats.html")
+def coach_or_competitor(username):
+    if is_coach(username) == True:
+        print "This user is a coach"
+        return render_template("signed_in.html",loggedin = True)
+    else:
+        print "This user is a competitor"
+        return render_template("competitor.html", loggedin = True)   
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -106,14 +114,6 @@ def login():
         else:
             error = 'Invalid Credentials. Please try again.' 
     return render_template('login.html', error=error)
-
-def coach_or_competitor(username):
-    if is_coach(username) == True:
-        print "This user is a coach"
-        return render_template("signed_in.html",loggedin = True)
-    else:
-        print "This user is a competitor"
-        return render_template("competitor.html", loggedin = True)    
  
 @app.route("/register", methods=['GET', 'POST'])
 def register():
