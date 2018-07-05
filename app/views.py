@@ -139,6 +139,9 @@ def register():
             flash('Error: All the form fields are required. Mail must be at least 6 chars and the password - at least 3')
     return render_template('register.html', form=form)
 
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template('404.html'), 404
 
 def cipher_text(text_to_cipher):
     """cipers a string
