@@ -15,6 +15,8 @@ CoachTeams
 	CoachId 
 	TeamId
 
-
+UsersTeams
+	UserId
+	TeamId
 
 
