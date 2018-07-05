@@ -3,9 +3,12 @@ from app import app
 from wtforms import Form, TextField, TextAreaField, validators, StringField, SubmitField
 import logging
 import sqlite3
+from cryptography.fernet import Fernet
 
 # logging.basicConfig(filename='app_log.log', level=logging.DEBUG,format='%(asctime)s:%(message)s')
-
+is_logged_in = False
+key = b'pRmgMa8T0INjEAfksaq2aafzoZXEuwKI7wDe4c1F8AY='
+cipher_suite = Fernet(key)
 
 @app.route('/')
 @app.route('/about')
@@ -20,9 +23,19 @@ def stream():
 def calendar():
    return render_template("calendar.html")
 
+@app.route('/competitors_information')
+def insert_info():
+    print "is logged in " + str(is_logged_in)
+    if is_logged_in == True:
+        return render_template("calendar.html")
+    else:
+        return render_template("not_accessible.html")
+
+
 @app.route('/pay')
 def payment():
-   return render_template("pay.html")
+    print is_logged_in
+    return render_template("pay.html")
 
 @app.route('/teams')
 def test_route():
@@ -42,8 +55,6 @@ def test_route():
             teams.append(res)
             names.append(res[0])
             stringRes = ''.join(res)
-            # print stringRes[stringRes.index("u"):]
-            print teams[i]
         i += 1
 
     return render_template('teams.html', teams=teams,names=names,countries = countries)
@@ -63,9 +74,10 @@ def register_team():
         if form.validate():
             c.execute("INSERT INTO {} VALUES(?, ?)".format("Teams"), (name,country))
             conn.commit()
+            is_logged_in = True
         else:
             flash('Error: All the form fields are required.')
- 
+        print is_logged_in
     return render_template('register_team.html', form=form)
 
 @app.route('/team_stats')
@@ -78,11 +90,13 @@ def login():
     if request.method == 'POST':
         username = request.form['username']
         password_input = request.form['password']
-        if get_password(username) == password_input:
-            print "SUCCESS"
+        unciphered_text = (cipher_suite.decrypt(get_password(username)))
+
+        if unciphered_text == password_input:
+            is_logged_in = True
             if is_coach(username) == True:
                 print "is coach"
-                return render_template("signed_in.html")
+                return render_template("signed_in.html",loggedin = True)
             else:
                 print "is competitor"
                 return render_template("competitor.html", loggedin = True)
@@ -117,8 +131,14 @@ def register():
         email = request.form['email']
         role = request.form['options'] # coach - 1, competitor - 2
 
+        pass_as_bytes = str.encode(str(password))
+        ciphered_password = cipher_suite.encrypt(pass_as_bytes)   #required to be bytes
+
+
+
+
         if form.validate():
-            c.execute("INSERT INTO {} VALUES(?, ?, ?, ?)".format("Users"), (name,email,password,role))
+            c.execute("INSERT INTO {} VALUES(?, ?, ?, ?)".format("Users"), (name,email,ciphered_password,role))
             conn.commit()
             print is_coach(name)
             if is_coach(name) == True:
