@@ -2,7 +2,9 @@
 {% block title %}Login{% endblock %}
 {% block body %}
     <div class="container">
-      <h1>Please login:</h1>
+      <h1>Please login: <a href = "/register" style="font-size: x-large;float:right;"> Don't have an account? Click here to sign up. </a></h1>
+      
+      
       <br>
       <form action="" method="post">
         <label for="name">Username:</label>
@@ -14,7 +16,7 @@
         <input type="password" class="form-control" placeholder="Password" name="password" value="{{
           request.form.password }}">
         <br>        
-        <button type="submit" class="btn btn-success  btn-block" value="Login">Login</button>
+        <button type="submit" class="btn btn-success btn-block" value="Login">Login</button>
 
       </form>
 <br>
