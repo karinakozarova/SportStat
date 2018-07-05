@@ -80,8 +80,12 @@ def login():
         password_input = request.form['password']
         if get_password(username) == password_input:
             print "SUCCESS"
-            print is_coach(username)
-            return render_template("competitor.html")
+            if is_coach(username) == True:
+                print "is coach"
+                return render_template("signed_in.html")
+            else:
+                print "is competitor"
+                return render_template("competitor.html", loggedin = True)
         else:
             error = 'Invalid Credentials. Please try again.' 
     return render_template('login.html', error=error)
@@ -116,9 +120,12 @@ def register():
         if form.validate():
             c.execute("INSERT INTO {} VALUES(?, ?, ?, ?)".format("Users"), (name,email,password,role))
             conn.commit()
-            if is_coach(name):
+            print is_coach(name)
+            if is_coach(name) == True:
+                print "is coach"
                 return render_template("signed_in.html")
             else:
+                print "is competitor"
                 return render_template("competitor.html", loggedin = True)
         else:
             flash('Error: All the form fields are required. Mail must be at least 6 chars and the password - at least 3')
@@ -160,5 +167,7 @@ def is_coach(username):
     c = conn.cursor()
     c.execute("Select role from Users where name = '{}'".format(username))
     res = str(c.fetchone())
+    res = res[3:-3]
+    print res
     if res == "1": return True
     return False
