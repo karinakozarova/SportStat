@@ -57,7 +57,7 @@ def test_route():
             stringRes = ''.join(res)
         i += 1
 
-    return render_template('teams.html', teams=teams,names=names,countries = countries)
+    return render_template('teams.html', teams=teams,names=names,countries = countries,legnth = len(teams))
 
 @app.route('/register_team', methods=['GET', 'POST'])
 def register_team():
