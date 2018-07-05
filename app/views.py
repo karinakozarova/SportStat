@@ -77,7 +77,6 @@ def register_team():
     if request.method == 'POST':
         conn = sqlite3.connect("test.db")
         c = conn.cursor()
-        create_table_for_teams(c,conn)
 
         name = request.form['name']
         country = request.form['country']
@@ -106,7 +105,8 @@ def login():
         username = request.form['username']
         password_input = request.form['password']
 
-        unciphered_text = (cipher_suite.decrypt(get_password(username)))
+        database_password = get_password(username)
+        unciphered_text = decipher_text(database_password)
 
         if unciphered_text == password_input:
             is_logged_in = True
@@ -124,15 +124,12 @@ def register():
         conn = sqlite3.connect("test.db")
         c = conn.cursor()
      
-        create_table_for_users(c,conn)
-
         name = request.form['name']
         password = request.form['password']
         email = request.form['email']
         role = request.form['options'] # coach - 1, competitor - 2
 
-        pass_as_bytes = str.encode(str(password))
-        ciphered_password = cipher_suite.encrypt(pass_as_bytes)   #required to be bytes
+        ciphered_password = cipher_text(password)
 
         if form.validate():
             c.execute("INSERT INTO {} VALUES(?, ?, ?, ?)".format("Users"), (name,email,ciphered_password,role))
@@ -143,8 +140,36 @@ def register():
     return render_template('register.html', form=form)
 
 
+def cipher_text(text_to_cipher):
+    """cipers a string
+
+    Args:
+        text_to_cipher: the text that should be cipered
+    Returns:
+        the ciphered text
+    """
+    string_to_bytes = str.encode(str(text_to_cipher))
+    return cipher_suite.encrypt(string_to_bytes)   #required to be bytes 
+
+def decipher_text(text_to_decipher):
+    """decipers a string
+
+    Args:
+        text_to_decipher: the text that should be decipered
+    Returns:
+        the unciphered text
+    """
+    return cipher_suite.decrypt(text_to_decipher)
+
 def create_table_for_users(c,conn):
-    c.execute("""DROP TABLE Users""")
+    """creates the table for the teams
+    
+    Args:
+        c: the cursoer
+        conn: the connection to the db
+        
+    """
+    # c.execute("""DROP TABLE Users""")
 
     c.execute(""" CREATE TABLE Users(
         name text,
@@ -156,6 +181,15 @@ def create_table_for_users(c,conn):
 
 
 def create_table_for_teams(c,conn):
+    """creates the table for the teams
+
+    Args:
+        c: the cursoer
+        conn: the connection to the db
+        
+    """
+    # c.execute("""DROP TABLE Teams""")
+
     c.execute("""
         CREATE TABLE Teams(
         team_name text,
@@ -163,14 +197,30 @@ def create_table_for_teams(c,conn):
     conn.commit()
 
 def get_password(username):
+    """gets the password of a user
+
+    Args:
+        username: the username for whose password we are looking
+    Returns:
+        the password stored in the database
+        
+    """
     conn = sqlite3.connect("test.db")
     c = conn.cursor()
     c.execute("Select password from Users where name = '{}'".format(username))
     res = str(c.fetchone())
-    res = clean_up_database_str(res)
-    return res
+    return clean_up_database_str(res)
 
 def is_coach(username):
+    """checks if the given username is a coach
+
+    Args:
+        username: the username that should be checked
+
+    Returns:
+        True if is a coach, False otherwise
+        
+    """
     conn = sqlite3.connect("test.db")
     c = conn.cursor()
     c.execute("Select role from Users where name = '{}'".format(username))
@@ -180,4 +230,13 @@ def is_coach(username):
     return False
 
 def clean_up_database_str(str):
+    """Removes unneded chars from the string, retrieved from the database
+
+    Args:
+        str: the string that should be parsed
+
+    Returns:
+        The fixed string
+
+    """
     return str[3:-3] 
