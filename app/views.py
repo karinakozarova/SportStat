@@ -4,6 +4,7 @@ from wtforms import Form, TextField, TextAreaField, validators, StringField, Sub
 import logging
 import sqlite3
 from cryptography.fernet import Fernet
+import re
 
 # logging.basicConfig(filename='app_log.log', level=logging.DEBUG,format='%(asctime)s:%(message)s')
 is_logged_in = False
@@ -18,6 +19,11 @@ class RegistrationForm(Form):
 class TeamsForm(Form):
     name = TextField('Name:', validators=[validators.required()])
     country = TextField('Country:',validators=[validators.required()])
+
+@app.route('/competitor', methods=['POST'])
+def register_team():
+    print "HERE"
+    return render_template("calendar.html")
 
 @app.route('/')
 @app.route('/about')
@@ -34,7 +40,6 @@ def calendar():
 
 @app.route('/competitors_information')
 def insert_info():
-    print "is logged in " + str(is_logged_in)
     if is_logged_in == True:
         return render_template("calendar.html")
     else:
@@ -42,7 +47,6 @@ def insert_info():
 
 @app.route('/pay')
 def payment():
-    print is_logged_in
     return render_template("pay.html")
 
 @app.route('/team_stats')
@@ -129,12 +133,15 @@ def register():
         email = request.form['email']
         role = request.form['options'] # coach - 1, competitor - 2
 
+
         ciphered_password = cipher_text(password)
 
-        if form.validate():
+        if form.validate() and is_valid_email(email) == True:
             c.execute("INSERT INTO {} VALUES(?, ?, ?, ?)".format("Users"), (name,email,ciphered_password,role))
             conn.commit()
             return coach_or_competitor(name)
+        elif is_valid_email == False:
+            flash('Error: That is not a valid email address')
         else:
             flash('Error: All the form fields are required. Mail must be at least 6 chars and the password - at least 3')
     return render_template('register.html', form=form)
@@ -142,6 +149,20 @@ def register():
 @app.errorhandler(404)
 def page_not_found(e):
     return render_template('404.html'), 404
+
+def is_valid_email(email):
+    """checks email against regex
+
+    Args:
+        email: the email that should be checked
+    Returns:
+        True if it's a valid email, False otherwise
+    """
+    is_valid_email = re.match('^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,4})$', email)
+    if is_valid_email is None:
+        return False
+    return True
+
 
 def cipher_text(text_to_cipher):
     """cipers a string
@@ -232,6 +253,19 @@ def is_coach(username):
     if res == "1": return True
     return False
 
+def change_password(username, newpassword):
+    """changes password in the database of a selected user
+
+    Args:
+        username: the username that should be checked
+        
+    """ 
+    conn = sqlite3.connect("test.db")
+    c = conn.cursor() 
+    password = cipher_text(newpassword)
+    c.execute("update Users set password= '{}' where username = {}".format(password,username))
+    conn.commit()
+ 
 def clean_up_database_str(str):
     """Removes unneded chars from the string, retrieved from the database
 
