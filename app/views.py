@@ -5,7 +5,7 @@ import logging
 import sqlite3
 from cryptography.fernet import Fernet
 import re
-
+import cryptography
 # logging.basicConfig(filename='app_log.log', level=logging.DEBUG,format='%(asctime)s:%(message)s')
 is_logged_in = False
 key = b'pRmgMa8T0INjEAfksaq2aafzoZXEuwKI7wDe4c1F8AY='
@@ -86,7 +86,7 @@ def register_team():
         country = request.form['country']
 
         if form.validate():
-            c.execute("INSERT INTO {} VALUES(?, ?)".format("Teams"), (name,country))
+            c.execute("INSERT INTO {} VALUES(?, ?)".format("Teams(team_name,country)"), (name,country))
             conn.commit()
             is_logged_in = True
         else:
@@ -110,8 +110,11 @@ def login():
         password_input = request.form['password']
 
         database_password = get_password(username)
-        unciphered_text = decipher_text(database_password)
-
+        try:
+            unciphered_text = decipher_text(database_password)
+        except cryptography.fernet.InvalidToken:
+            flash('Not the right password for that username')
+            return render_template('login.html', error='Not the right password for that username')
         if unciphered_text == password_input:
             is_logged_in = True
             return coach_or_competitor(username)
@@ -128,6 +131,9 @@ def register():
         conn = sqlite3.connect("test.db")
         c = conn.cursor()
      
+        create_table_for_users(c,conn)
+        create_table_for_teams(c,conn)
+        print "crreated tables"
         name = request.form['name']
         password = request.form['password']
         email = request.form['email']
@@ -137,7 +143,7 @@ def register():
         ciphered_password = cipher_text(password)
 
         if form.validate() and is_valid_email(email) == True:
-            c.execute("INSERT INTO {} VALUES(?, ?, ?, ?)".format("Users"), (name,email,ciphered_password,role))
+            c.execute("INSERT INTO {} VALUES(?, ?, ?, ?)".format("Users(name,email, password,role)"), (name,email,ciphered_password,role))
             conn.commit()
             return coach_or_competitor(name)
         elif is_valid_email == False:
@@ -193,9 +199,10 @@ def create_table_for_users(c,conn):
         conn: the connection to the db
         
     """
-    # c.execute("""DROP TABLE Users""")
+    c.execute("""DROP TABLE Users""")
 
     c.execute(""" CREATE TABLE Users(
+        id INTEGER PRIMARY KEY,
         name text,
         email text,
         password text,
@@ -212,10 +219,11 @@ def create_table_for_teams(c,conn):
         conn: the connection to the db
         
     """
-    # c.execute("""DROP TABLE Teams""")
+    c.execute("""DROP TABLE Teams""")
 
     c.execute("""
         CREATE TABLE Teams(
+        id INTEGER PRIMARY KEY,
         team_name text,
         country text)""")
     conn.commit()
