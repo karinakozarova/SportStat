@@ -20,10 +20,13 @@ class TeamsForm(Form):
     name = TextField('Name:', validators=[validators.required()])
     country = TextField('Country:',validators=[validators.required()])
 
-@app.route('/competitor', methods=['POST'])
-def register_team():
+@app.route('/competitor', methods=['GET', 'POST'])
+def login():
     print "HERE"
-    return render_template("calendar.html")
+    error = None
+    if request.method == 'POST':
+        password_input = request.form['submit']
+    return render_template('competitors_information.html', error=error)
 
 @app.route('/')
 @app.route('/about')
@@ -131,8 +134,8 @@ def register():
         conn = sqlite3.connect("test.db")
         c = conn.cursor()
      
-        create_table_for_users(c,conn)
-        create_table_for_teams(c,conn)
+        # create_table_for_users(c,conn)
+        # create_table_for_teams(c,conn)
         print "crreated tables"
         name = request.form['name']
         password = request.form['password']
