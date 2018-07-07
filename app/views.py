@@ -28,6 +28,10 @@ def login():
         password_input = request.form['submit']
     return render_template('competitors_information.html', error=error)
 
+@app.route('/forgotten_password')
+def render_underconstruction():
+    return render_template('under_development.html')
+
 @app.route('/')
 @app.route('/about')
 def index():
