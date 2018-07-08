@@ -7,3 +7,4 @@ from app import views
 
 # Load the config file
 app.config.from_object('config')
+

@@ -6,10 +6,21 @@ import sqlite3
 from cryptography.fernet import Fernet
 import re
 import cryptography
+from flask_login import current_user, LoginManager, login_user, logout_user, login_required
+
 # logging.basicConfig(filename='app_log.log', level=logging.DEBUG,format='%(asctime)s:%(message)s')
 is_logged_in = False
 key = b'pRmgMa8T0INjEAfksaq2aafzoZXEuwKI7wDe4c1F8AY='
 cipher_suite = Fernet(key)
+
+login_manager = LoginManager()
+login_manager.init_app(app)
+
+
+@login_manager.user_loader
+def load_user(user_id):
+    return None
+
 
 class RegistrationForm(Form):
     name = TextField('Name:', validators=[validators.required()])
@@ -20,17 +31,36 @@ class TeamsForm(Form):
     name = TextField('Name:', validators=[validators.required()])
     country = TextField('Country:',validators=[validators.required()])
 
+class User:
+    is_authenticated = False
+    is_active = True
+    is_anonymous = True
+    def get_id(self):
+        return str(1).encode("utf-8").decode("utf-8") 
+
+    def __init__(self):
+        pass
+
+@app.route('/authentication')
+def authentication():
+    if current_user.is_authenticated:
+        print "AUTHENTICAAATED"
+    else:
+        print "shit.."
+    return render_template('under_development.html')
+
+@app.route('/forgotten_password')
+def render_underconstruction():
+    return render_template('under_development.html')
+
+@login_required
 @app.route('/competitor', methods=['GET', 'POST'])
-def login():
+def competitor():
     print "HERE"
     error = None
     if request.method == 'POST':
         password_input = request.form['submit']
     return render_template('competitors_information.html', error=error)
-
-@app.route('/forgotten_password')
-def render_underconstruction():
-    return render_template('under_development.html')
 
 @app.route('/')
 @app.route('/about')
@@ -45,6 +75,7 @@ def stream():
 def calendar():
    return render_template("calendar.html")
 
+@login_required
 @app.route('/competitors_information')
 def insert_info():
     if is_logged_in == True:
@@ -52,10 +83,12 @@ def insert_info():
     else:
         return render_template("not_accessible.html")
 
+@login_required
 @app.route('/pay')
 def payment():
     return render_template("pay.html")
 
+@login_required
 @app.route('/team_stats')
 def team_stats():
    return render_template("team_stats.html")
@@ -81,6 +114,7 @@ def test_route():
 
     return render_template('teams.html', teams=teams,names=names,countries = countries,length_teams = len(teams))
 
+@login_required
 @app.route('/register_team', methods=['GET', 'POST'])
 def register_team():
     form = TeamsForm(request.form)
@@ -100,6 +134,7 @@ def register_team():
             flash('Error: All the form fields are required.')
         print is_logged_in
     return render_template('register_team.html', form=form)
+
 
 def coach_or_competitor(username):
     if is_coach(username) == True:
@@ -123,12 +158,15 @@ def login():
             flash('Not the right password for that username')
             return render_template('login.html', error='Not the right password for that username')
         if unciphered_text == password_input:
-            is_logged_in = True
+            user = User()
+            login_user(user)
             return coach_or_competitor(username)
         else:
             error = 'Invalid Credentials. Please try again.' 
     return render_template('login.html', error=error)
  
+
+
 @app.route("/register", methods=['GET', 'POST'])
 def register():
     form = RegistrationForm(request.form)
@@ -140,7 +178,7 @@ def register():
      
         # create_table_for_users(c,conn)
         # create_table_for_teams(c,conn)
-        print "crreated tables"
+        # print "crreated tables"
         name = request.form['name']
         password = request.form['password']
         email = request.form['email']
@@ -152,6 +190,8 @@ def register():
         if form.validate() and is_valid_email(email) == True:
             c.execute("INSERT INTO {} VALUES(?, ?, ?, ?)".format("Users(name,email, password,role)"), (name,email,ciphered_password,role))
             conn.commit()
+            user = User()
+            login_user(user)
             return coach_or_competitor(name)
         elif is_valid_email == False:
             flash('Error: That is not a valid email address')
