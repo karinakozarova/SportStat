@@ -3,11 +3,29 @@
 {% block body %}
 <br>
 <div class="jumbotron">
-  <h1>The About Page</h1>
-  <p class="lead">You can learn more about my website here.</p>
-  {% if loggedin = True%}
-    	<p>Yes it is</p>
-  {% endfor %}
+  <h1>Register: part 2</h1>
+  {% if verify == True:%}
+    	<p class="lead"> Hello, {{name}} <br> You registered as Competitor so you have to fill a bit more information:</p> 
+    	<div class="form-group">
+    	  <label style = "font-size: large" for="name">Height</label>
+    	  <input type="text" class="form-control" id="height" name="height" placeholder="What's your height?">
+    	  <br>
+
+    	  <label style = "font-size: large" for="name">Weight</label>
+    	  <input type="text" class="form-control" id="weight" name="weight" placeholder="What's your weight?">
+    	  <br>
+
+    	  <label style = "font-size: large" for="name">Age</label>
+    	  <input type="text" class="form-control" id="age" name="age" placeholder="What's your age,{{name}}?">
+    	  <br>
+
+    	  <label style = "font-size: large" for="name">Team name</label>
+    	  <input type="text" class="form-control" id="coach" name="coach" placeholder="What's your coach name?">
+    	  <br> <br>
+    	  <button type="submit" class="btn btn-success btn-block">Sign Up</button>
+
+    	</div>
+  {% endif %}
 </div>
 
 {% endblock %}

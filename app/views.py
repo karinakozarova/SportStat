@@ -75,7 +75,6 @@ def stream():
 def calendar():
    return render_template("calendar.html")
 
-@login_required
 @app.route('/competitors_information')
 def insert_info():
     if is_logged_in == True:
@@ -179,20 +178,28 @@ def register():
         # create_table_for_users(c,conn)
         # create_table_for_teams(c,conn)
         # print "crreated tables"
+
         name = request.form['name']
         password = request.form['password']
         email = request.form['email']
         role = request.form['options'] # coach - 1, competitor - 2
+        print "role is " + role
 
 
         ciphered_password = cipher_text(password)
 
         if form.validate() and is_valid_email(email) == True:
-            c.execute("INSERT INTO {} VALUES(?, ?, ?, ?)".format("Users(name,email, password,role)"), (name,email,ciphered_password,role))
+            c.execute("INSERT INTO {} VALUES(?, ?, ?, ?)".format("Users(name,email,password,role)"), (name,email,ciphered_password,role))
             conn.commit()
+            
+            print role
+            if role == str(2):
+                print "rendering"
+                return render_template("competitors_information.html", name = name, email = email,verify = True)
+            else:
+                print "WTF"
             user = User()
             login_user(user)
-            return coach_or_competitor(name)
         elif is_valid_email == False:
             flash('Error: That is not a valid email address')
         else:
