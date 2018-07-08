@@ -31,6 +31,15 @@ class TeamsForm(Form):
     name = TextField('Name:', validators=[validators.required()])
     country = TextField('Country:',validators=[validators.required()])
 
+class CompetitorsForm(Form):
+    name = TextField('Name:', validators=[validators.required()])
+    email = TextField('email:',validators=[validators.required()])
+    age = TextField('age:',validators=[validators.required()])
+    weight = TextField('weight:',validators=[validators.required()])
+    height = TextField('height:',validators=[validators.required()])
+    coach = TextField('coach:',validators=[validators.required()])
+
+
 class User:
     is_authenticated = False
     is_active = True
@@ -56,7 +65,6 @@ def render_underconstruction():
 @login_required
 @app.route('/competitor', methods=['GET', 'POST'])
 def competitor():
-    print "HERE"
     error = None
     if request.method == 'POST':
         password_input = request.form['submit']
@@ -75,12 +83,31 @@ def stream():
 def calendar():
    return render_template("calendar.html")
 
-@app.route('/competitors_information')
-def insert_info():
-    if is_logged_in == True:
-        return render_template("calendar.html")
+@app.route('/competitors_information', methods=['GET', 'POST'])
+def insert_info(name = "Guest", email = "none"):
+    form = CompetitorsForm(request.form)
+    print form.errors
+    if request.method == 'POST':
+        print "GEREERERER"
+        conn = sqlite3.connect("test.db")
+        c = conn.cursor()
+
+        name = request.form['name']
+        email = request.form['email']
+        age = request.form['age']
+        weight = request.form['weight']
+        height = request.form['height']
+        coach = request.form['coach']
+
+        if form.validate():
+           print "VALIDATED"
+           print name,email,age,weight,height,coach
+        else:
+            flash('Error: All the form fields are required.')
+        print is_logged_in
     else:
-        return render_template("not_accessible.html")
+        print "SHIT"
+        return render_template("competitors_information.html", verify = False)
 
 @login_required
 @app.route('/pay')
@@ -194,8 +221,8 @@ def register():
             
             print role
             if role == str(2):
-                print "rendering"
-                return render_template("competitors_information.html", name = name, email = email,verify = True)
+                insert_info(name, email)
+                # return render_template("competitors_information.html", name = name, email = email,verify = True)
             else:
                 print "WTF"
             user = User()

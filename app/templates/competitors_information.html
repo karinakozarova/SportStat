@@ -26,6 +26,35 @@
 
     	</div>
   {% endif %}
+  {% if verify == False:%}
+    	<div class="form-group">
+    	  <label style = "font-size: large" for="name">Name:</label>
+    	  <input type="text" class="form-control" id="name" name="name" placeholder="What's your name?">
+
+    	  <br>
+    	  <label style = "font-size: large" for="email">Email:</label>
+    	  <input type="text" class="form-control" id="email" name="email" placeholder="Your email will be used to contact you.">
+    	  <br>
+
+    	  <label style = "font-size: large" for="name">Height</label>
+    	  <input type="text" class="form-control" id="height" name="height" placeholder="What's your height?">
+    	  <br>
+
+    	  <label style = "font-size: large" for="name">Weight</label>
+    	  <input type="text" class="form-control" id="weight" name="weight" placeholder="What's your weight?">
+    	  <br>
+
+    	  <label style = "font-size: large" for="name">Age</label>
+    	  <input type="text" class="form-control" id="age" name="age" placeholder="What's your age,{{name}}?">
+    	  <br>
+
+    	  <label style = "font-size: large" for="name">Team name</label>
+    	  <input type="text" class="form-control" id="coach" name="coach" placeholder="What's your coach name?">
+    	  <br> <br>
+    	  <button type="submit" class="btn btn-success btn-block">Sign Up</button>
+
+    	</div>
+  {% endif %}
 </div>
 
 {% endblock %}
