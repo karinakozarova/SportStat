@@ -1,3 +1,9 @@
+""" 
+------------------------------------------------------------------------
+                        IMPORTS SECTION
+------------------------------------------------------------------------
+"""
+
 from flask import Flask,render_template, redirect, url_for, request, flash
 from app import app
 from wtforms import Form, TextField, TextAreaField, validators, StringField, SubmitField
@@ -22,8 +28,13 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
-
 # logging.basicConfig(filename='app_log.log', level=logging.DEBUG,format='%(asctime)s:%(message)s')
+
+""" 
+------------------------------------------------------------------------
+                      GLOBAL VARIABLES SECTION
+------------------------------------------------------------------------
+"""
 is_logged_in = False
 key = b'pRmgMa8T0INjEAfksaq2aafzoZXEuwKI7wDe4c1F8AY='
 cipher_suite = Fernet(key)
@@ -38,6 +49,12 @@ def load_user(user_id):
     return None
 
 
+
+""" 
+------------------------------------------------------------------------
+                            FORMS SECTION
+------------------------------------------------------------------------
+"""
 class RegistrationForm(Form):
     name = TextField('Name:', validators=[validators.required()])
     email = TextField('Email:', validators=[validators.required(), validators.Length(min=6, max=35)])
@@ -57,6 +74,11 @@ class CompetitorsForm(Form):
     coach = TextField('Coach:',validators=[validators.required()])
 
 
+""" 
+------------------------------------------------------------------------
+                            CLASSES SECTION
+------------------------------------------------------------------------
+"""
 class User:
     is_authenticated = False
     is_active = True
@@ -66,6 +88,38 @@ class User:
 
     def __init__(self):
         pass
+
+""" 
+------------------------------------------------------------------------
+                            ROUTES SECTION
+------------------------------------------------------------------------
+"""
+@app.route('/')
+@app.route('/about')
+def index():
+    return render_template("index.html")
+
+@app.route('/stream')
+def stream():
+   return render_template("stream.html")
+
+@app.route('/calendar')
+def calendar():
+   return render_template("calendar.html")
+
+@login_required
+@app.route('/pay')
+def payment():
+    return render_template("pay.html")
+
+@login_required
+@app.route('/team_stats')
+def team_stats():
+   return render_template("team_stats.html")
+
+@app.route('/forgotten_password')
+def render_underconstruction():
+    return render_template('under_development.html')
 
 @app.route('/change_password', methods=['GET', 'POST'])
 def authentication():
@@ -82,10 +136,6 @@ def authentication():
     return render_template("change_password.html")
 
 
-@app.route('/forgotten_password')
-def render_underconstruction():
-    return render_template('under_development.html')
-
 @login_required
 @app.route('/competitor', methods=['GET', 'POST'])
 def competitor():
@@ -94,18 +144,6 @@ def competitor():
         password_input = request.form['submit']
     return render_template('competitors_information.html', error=error)
 
-@app.route('/')
-@app.route('/about')
-def index():
-    return render_template("index.html")
-
-@app.route('/stream')
-def stream():
-   return render_template("stream.html")
-
-@app.route('/calendar')
-def calendar():
-   return render_template("calendar.html")
 
 @app.route('/competitors_information', methods=['GET', 'POST'])
 def insert_info(name = "Guest", email = "none"):
@@ -123,24 +161,13 @@ def insert_info(name = "Guest", email = "none"):
         coach = request.form['coach']
 
         if form.validate():
-           print "VALIDATED"
            print name,email,age,weight,height,coach
         else:
             flash('Error: All the form fields are required.')
         print is_logged_in
     else:
-        print "SHIT"
         return render_template("competitors_information.html", verify = False)
 
-@login_required
-@app.route('/pay')
-def payment():
-    return render_template("pay.html")
-
-@login_required
-@app.route('/team_stats')
-def team_stats():
-   return render_template("team_stats.html")
 
 @app.route('/teams')
 def test_route():
@@ -187,15 +214,7 @@ def register_team():
         else:
             flash('Error: All the form fields are required.')
     return render_template('register_team.html', form=form)
-
-
-def coach_or_competitor(username):
-    if is_coach(username) == True:
-        print "This user is a coach"
-        return render_template("signed_in.html",loggedin = True)
-    else:
-        print "This user is a competitor"
-        return render_template("competitor.html", loggedin = True)   
+  
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -235,10 +254,6 @@ def register():
     if request.method == 'POST':
         conn = sqlite3.connect(database_name)
         c = conn.cursor()
-     
-        # create_table_for_users(c,conn)
-        # create_table_for_teams(c,conn)
-        # print "crreated tables"
 
         name = request.form['name']
         password = request.form['password']
@@ -258,12 +273,7 @@ def register():
             flash('Error: All the form fields are required. Mail must be at least 6 chars and the password - at least 3')
     return render_template('register.html', form=form)
 
-def signed_in(role,name,email):
-    if role == str(2):
-        # insert_info(name, email)
-        return render_template("competitors_information.html", name = name, email = email,verify = True)
-    else:
-        return render_template("signed_in.html", name = name, email = email,verify = True)
+
 
 
 """ 
@@ -574,3 +584,18 @@ def string_to_bytes(text):
         the converted text
     """
     return str.encode(str(text))
+
+def coach_or_competitor(username):
+    if is_coach(username) == True:
+        print "This user is a coach"
+        return render_template("signed_in.html",loggedin = True)
+    else:
+        print "This user is a competitor"
+        return render_template("competitor.html", loggedin = True) 
+
+def signed_in(role,name,email):
+    if role == str(2):
+        # insert_info(name, email)
+        return render_template("competitors_information.html", name = name, email = email,verify = True)
+    else:
+        return render_template("signed_in.html", name = name, email = email,verify = True)
