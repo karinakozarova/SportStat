@@ -3,18 +3,25 @@ from app import app
 from wtforms import Form, TextField, TextAreaField, validators, StringField, SubmitField
 import logging
 import sqlite3
-from cryptography.fernet import Fernet
 import re
-import cryptography
 
+from flask_login import current_user, LoginManager, login_user, logout_user, login_required
+
+# for passwords encryption
+"""
+
+    AES in CBC mode with a 128-bit key for encryption; using PKCS7 padding.
+    HMAC using SHA256 for authentication.
+    Initialization vectors are generated using os.urandom().
+"""
 import base64
 import os
+import cryptography
 from cryptography.fernet import Fernet
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
-from flask_login import current_user, LoginManager, login_user, logout_user, login_required
 
 # logging.basicConfig(filename='app_log.log', level=logging.DEBUG,format='%(asctime)s:%(message)s')
 is_logged_in = False
@@ -273,20 +280,8 @@ def cipher_text(text_to_cipher):
     Returns:
         the ciphered text
     """
-    string_to_bytes = str.encode(str(text_to_cipher))
-    salt = os.urandom(16)
-    kdf = PBKDF2HMAC(
-        algorithm=hashes.SHA256(),
-        length=32,
-        salt=salt,
-        iterations=100000,
-        backend=default_backend()
-    )
-    password = b"password"
-    key = base64.urlsafe_b64encode(kdf.derive(password))
-    f = Fernet(key)
-    print f.decrypt(f.encrypt(string_to_bytes)  )
-    return f.encrypt(string_to_bytes)   
+    f = get_fernet_key()
+    return f.encrypt(string_to_bytes(text_to_cipher))   
 
 def decipher_text(text_to_decipher):
     """decipers a string
@@ -296,7 +291,10 @@ def decipher_text(text_to_decipher):
     Returns:
         the unciphered text
     """
-    string_to_bytes = str.encode(str(text_to_decipher))
+    f = get_fernet_key()
+    return f.decrypt(string_to_bytes(text_to_decipher))
+
+def get_fernet_key():
     salt = os.urandom(16)
     kdf = PBKDF2HMAC(
         algorithm=hashes.SHA256(),
@@ -307,10 +305,16 @@ def decipher_text(text_to_decipher):
     )
     password = b"password"
     key = base64.urlsafe_b64encode(kdf.derive(password))
-    f = Fernet(key)
-    return f.decrypt(text_to_decipher)
+    return Fernet(key)
+def string_to_bytes(text):
+    """converts a string to bytes
 
-
+    Args:
+        text: the text that should be converted
+    Returns:
+        the converted text
+    """
+    return str.encode(str(text))
 
 def drop_all_tables():
     """ drops all database tables"""
