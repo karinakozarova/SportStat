@@ -156,7 +156,9 @@ def register_team():
 
         if form.validate() and is_coach(coach):
             c.execute("INSERT INTO {} VALUES(?, ?)".format("Teams(team_name,country)"), (name,country))
+            c.execute("INSERT INTO {} VALUES(?, ?)".format("TeamsCoaches(team_name,coach_name)"), (name,coach))
             conn.commit()
+            print c.fetchall()
         elif is_coach(coach) == False:
             flash('Error: Not a valid coach.')
         else:
@@ -223,10 +225,11 @@ def register():
             
             print role
             if role == str(2):
-                insert_info(name, email)
-                # return render_template("competitors_information.html", name = name, email = email,verify = True)
+                # insert_info(name, email)
+                return render_template("competitors_information.html", name = name, email = email,verify = True)
             else:
-                print "WTF"
+                return render_template("signed_in.html", name = name, email = email,verify = True)
+
             user = User()
             login_user(user)
         elif is_valid_email == False:
@@ -282,7 +285,7 @@ def drop_all_tables():
     c = conn.cursor()
     c.execute("DROP TABLE Users")
     c.execute("DROP TABLE Teams")
-    c.execute("DROP TABLE TeamsCoaches")
+    # c.execute("DROP TABLE TeamsCoaches")
 
 
 def create_all_tables():
@@ -375,6 +378,20 @@ def is_coach(username):
     res = clean_up_database_str(res)
     if res == "1": return True
     return False
+
+def get_teams_of_coach(c,conn,coach):
+    """gets all the teams a coach has
+
+    Args:
+        c: the cursor
+        conn: the connection to the db
+        coach: the name of the coach
+    
+    Returns:
+        a list of all the teams a coach has
+    """
+    c.execute("Select team_name from TeamsCoaches where coach_name = '{}'".format(coach))
+    return c.fetchall
 
 def change_password(username, newpassword):
     """changes password in the database of a selected user
