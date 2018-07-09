@@ -132,20 +132,25 @@ def authentication():
         oldpassword = request.form['oldpassword']
         password = request.form['password']
 
-        password = cipher_text(password)
 
-        pswd = get_password(name)
-        pswd = decipher_text(pswd)
+        pswd = decipher_text(get_password(name))
+        print pswd,password
 
-        print pswd,oldpassword
         if str(pswd) == str(oldpassword):
             print "Passwords match"
+            password = cipher_text(password)
+
             change_password(name,password)
             print "Success in changing psswd"
+            c.execute("Select * from Users where name = 'admin'")
+            r = c.fetchall()
+            print r
         else: 
+            print "WRONG PSSWD"
             flash('Error: Wrong password')
+        print "auth PSSWD"
 
-        authenticate_user(name,oldpassword)
+        matching_username_and_password(name,oldpassword)
     return render_template("change_password.html")
 
 
@@ -417,7 +422,6 @@ def get_all_competitors(c,conn):
         else:
             competitors.append(res[0])
             stringRes = ''.join(res)
-        print competitors
     return competitors
 
 def new_competitor(c,conn,teamname,competitorname,age,height,weight):
@@ -516,7 +520,7 @@ def change_password(username, newpassword):
  
 
 
-def authenticate_user(username,password):
+def matching_username_and_password(username,password):
     """chekcs if the given password matches the username
 
     Args:
