@@ -28,6 +28,7 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
+
 # logging.basicConfig(filename='app_log.log', level=logging.DEBUG,format='%(asctime)s:%(message)s')
 
 """ 
@@ -71,7 +72,7 @@ class CompetitorsForm(Form):
     age = TextField('Age:',validators=[validators.required(),validators.Length(min=1, max=3)])
     weight = TextField('Weight:',validators=[validators.required(),validators.Length(min=2, max=4)])
     height = TextField('Height:',validators=[validators.required(),validators.Length(min=2, max=4)])
-    coach = TextField('Coach:',validators=[validators.required()])
+    teamname = TextField('Teamname:',validators=[validators.required()])
 
 
 """ 
@@ -159,26 +160,42 @@ def competitor():
 
 @app.route('/competitors_information', methods=['GET', 'POST'])
 def insert_info(name = "Guest", email = "none"):
-    form = CompetitorsForm(request.form)
-    print form.errors
+
+    error = None
     if request.method == 'POST':
+        username = request.form['username']
+        password_input = request.form['password']
+        height = request.form['height']
+        age = request.form['age']
+        weight = request.form['weight']
+        teamname = request.form['teamname']
+
         conn = sqlite3.connect(database_name)
         c = conn.cursor()
 
-        name = request.form['name']
-        email = request.form['email']
-        age = request.form['age']
-        weight = request.form['weight']
-        height = request.form['height']
-        coach = request.form['coach']
+        print height,weight,age,teamname
+    return render_template('competitors_information.html', error=error)
 
-        if form.validate():
-           print name,email,age,weight,height,coach
-        else:
-            flash('Error: All the form fields are required.')
-        print is_logged_in
-    else:
-        return render_template("competitors_information.html", verify = False)
+    # form = CompetitorsForm(request.form)
+    # print form.errors
+    # if request.method == 'POST':
+    #     conn = sqlite3.connect(database_name)
+    #     c = conn.cursor()
+
+    #     name = request.form['name']
+    #     email = request.form['email']
+    #     age = request.form['age']
+    #     weight = request.form['weight']
+    #     height = request.form['height']
+    #     coach = request.form['coach']
+
+    #     if form.validate():
+    #        print name,email,age,weight,height,coach
+    #     else:
+    #         flash('Error: All the form fields are required.')
+    #     print is_logged_in
+    # else:
+    #     return render_template("competitors_information.html", verify = False)
 
 
 @app.route('/teams')

@@ -12,12 +12,13 @@
           request.form.username }}"> 
           <br>
 
-        <label for="password">Password: </label> <a href = "/forgotten_password" style="float:right"> Forgotten password?Click here. </a>
+        <label for="password">Password: </label>
+
         <input type="password" class="form-control" placeholder="Password" name="password" value="{{
           request.form.password }}">
         <br>        
-        <button type="submit" class="btn btn-success btn-block" value="Login">Login</button>
 
+        <button type="submit" class="btn btn-success btn-block" value="Login">Login</button>
       </form>
       <br>
       {% if error %}
