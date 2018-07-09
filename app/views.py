@@ -264,9 +264,250 @@ def signed_in(role,name,email):
         return render_template("competitors_information.html", name = name, email = email,verify = True)
     else:
         return render_template("signed_in.html", name = name, email = email,verify = True)
+
+
+""" 
+------------------------------------------------------------------------
+                            ERROR HANDLING SECTION
+------------------------------------------------------------------------
+"""
 @app.errorhandler(404)
 def page_not_found(e):
     return render_template('404.html'), 404
+
+
+""" 
+------------------------------------------------------------------------
+                            DATABASE TABLES SECTION
+------------------------------------------------------------------------
+"""
+def drop_all_tables():
+    """ drops all database tables"""
+    conn = sqlite3.connect(database_name)
+    c = conn.cursor()
+    c.execute("DROP TABLE Users")
+    c.execute("DROP TABLE Teams")
+    c.execute("DROP TABLE TeamsCoaches")
+    c.execute("DROP TABLE Competitors")
+
+def create_all_tables():
+    """ creates all database tables"""
+    conn = sqlite3.connect(database_name)
+    c = conn.cursor()
+    create_table_for_teams(c,conn)
+    create_table_for_users(c,conn)
+    create_teams_coach_table(c,conn)
+    create_competitors_table(c,conn)
+
+def create_table_for_users(c,conn):
+    """creates the table for the teams
+    
+    Args:
+        c: the cursor
+        conn: the connection to the db
+        
+    """
+    c.execute(""" CREATE TABLE Users(
+        id INTEGER PRIMARY KEY,
+        name text,
+        email text,
+        password text,
+        role text
+    )""")
+    conn.commit()
+
+   
+
+def create_table_for_teams(c,conn):
+    """creates the table for the teams
+
+    Args:
+        c: the cursor
+        conn: the connection to the db
+        
+    """
+    c.execute("""
+        CREATE TABLE Teams(
+        id INTEGER PRIMARY KEY,
+        team_name text,
+        country text)""")
+    conn.commit()
+
+
+def create_teams_coach_table(c,conn):
+    """creates the connection table for teams and coaches
+
+    Args:
+        c: the cursor
+        conn: the connection to the db
+        
+    """
+
+    c.execute("""
+        CREATE TABLE TeamsCoaches(
+        id INTEGER PRIMARY KEY,
+        team_name text,
+        coach_name text)""")
+    conn.commit()
+
+
+def create_competitors_table(c,conn):
+    """creates the competitors table =
+
+    Args:
+        c: the cursor
+        conn: the connection to the db
+        
+    """
+
+    c.execute("""
+        CREATE TABLE Competitors(
+        id INTEGER PRIMARY KEY,
+        team_id text,
+        competitor_id text,
+        age text,
+        height text,
+        weight text)""")
+    conn.commit()
+
+
+""" 
+------------------------------------------------------------------------
+                        DATABASE QUERIES SECTION
+------------------------------------------------------------------------
+"""
+
+def get_role(c,conn,username):
+    """gets what is the role of the suer with username
+    
+    Args:
+        c: the cursor
+        conn: the connection to the db
+        username: the username that should be checked to see if it's a competitor or coach
+        
+    """
+    c.execute("Select role from Users where name = '{}'".format(username))
+    res = c.fetchone()
+    print "role is " + str(res)
+    return res 
+
+
+def get_email_from_username(c,conn,username):
+    """gets what is the email 
+    
+    Args:
+        c: the cursor
+        conn: the connection to the db
+        username: the username that should be used
+        
+    """
+    c.execute("Select email from Users where name = '{}'".format(username))
+    res = c.fetchone()
+    print "mail is " + str(res)
+    return res 
+
+def get_password(username):
+    """gets the password of a user
+
+    Args:
+        username: the username for whose password we are looking
+    Returns:
+        the password stored in the database
+        
+    """
+    conn = sqlite3.connect(database_name)
+    c = conn.cursor()
+    c.execute("Select password from Users where name = '{}'".format(username))
+    res = str(c.fetchone())
+    return clean_up_database_str(res)
+
+def is_coach(username):
+    """checks if the given username is a coach
+
+    Args:
+        username: the username that should be checked
+
+    Returns:
+        True if is a coach, False otherwise
+        
+    """
+    conn = sqlite3.connect(database_name)
+    c = conn.cursor()
+    c.execute("Select role from Users where name = '{}'".format(username))
+    res = str(c.fetchone())
+    res = clean_up_database_str(res)
+    if res == "1": return True
+    return False
+
+def get_teams_of_coach(c,conn,coach):
+    """gets all the teams a coach has
+
+    Args:
+        c: the cursor
+        conn: the connection to the db
+        coach: the name of the coach
+    
+    Returns:
+        a list of all the teams a coach has
+    """
+    c.execute("Select team_name from TeamsCoaches where coach_name = '{}'".format(coach))
+    return c.fetchall
+
+def change_password(username, newpassword):
+    """changes password in the database of a selected user
+
+    Args:
+        username: the username that should be checked
+        
+    """ 
+    conn = sqlite3.connect(database_name)
+    c = conn.cursor() 
+    password = cipher_text(newpassword)
+    c.execute("update Users set password= '{}' where username = {}".format(password,username))
+    conn.commit()
+ 
+
+
+def authenticate_user(username,password):
+    """chekcs if the given password matches the username
+
+    Args:
+        username: the string that should be used as username
+        password: the string that should be used as password
+
+    Returns:
+        True if that's the correct password, False otherwise
+    """
+
+    current_psswd = get_password(username)
+    password = cipher_text(password)
+    # print "pass is" + password 
+    # print "\ncurrent_psswd is" + current_psswd 
+
+    if current_psswd == password:
+        return True
+
+    # print "\n\n"
+    # print current_psswd,password
+    return False
+
+
+""" 
+------------------------------------------------------------------------
+                    HELPING FUNCTIONS SECTION
+------------------------------------------------------------------------
+"""
+def clean_up_database_str(str):
+    """Removes unneded chars from the string, retrieved from the database
+
+    Args:
+        str: the string that should be parsed
+
+    Returns:
+        The fixed string
+
+    """
+    return str[3:-3] 
 
 def is_valid_email(email):
     """checks email against regex
@@ -333,192 +574,3 @@ def string_to_bytes(text):
         the converted text
     """
     return str.encode(str(text))
-
-def drop_all_tables():
-    """ drops all database tables"""
-    conn = sqlite3.connect(database_name)
-    c = conn.cursor()
-    c.execute("DROP TABLE Users")
-    c.execute("DROP TABLE Teams")
-    c.execute("DROP TABLE TeamsCoaches")
-
-
-def create_all_tables():
-    """ creates all database tables"""
-    conn = sqlite3.connect(database_name)
-    c = conn.cursor()
-    create_table_for_teams(c,conn)
-    create_table_for_users(c,conn)
-    create_teams_coach_table(c,conn)
-
-def create_table_for_users(c,conn):
-    """creates the table for the teams
-    
-    Args:
-        c: the cursor
-        conn: the connection to the db
-        
-    """
-    c.execute(""" CREATE TABLE Users(
-        id INTEGER PRIMARY KEY,
-        name text,
-        email text,
-        password text,
-        role text
-    )""")
-    conn.commit()
-
-def get_role(c,conn,username):
-    """gets what is the role of the suer with username
-    
-    Args:
-        c: the cursor
-        conn: the connection to the db
-        username: the username that should be checked to see if it's a competitor or coach
-        
-    """
-    c.execute("Select role from Users where name = '{}'".format(username))
-    res = c.fetchone()
-    print "role is " + str(res)
-    return res    
-
-def get_email_from_username(c,conn,username):
-    """gets what is the email 
-    
-    Args:
-        c: the cursor
-        conn: the connection to the db
-        username: the username that should be used
-        
-    """
-    c.execute("Select email from Users where name = '{}'".format(username))
-    res = c.fetchone()
-    print "mail is " + str(res)
-    return res 
-def create_table_for_teams(c,conn):
-    """creates the table for the teams
-
-    Args:
-        c: the cursor
-        conn: the connection to the db
-        
-    """
-    c.execute("""
-        CREATE TABLE Teams(
-        id INTEGER PRIMARY KEY,
-        team_name text,
-        country text)""")
-    conn.commit()
-
-
-def create_teams_coach_table(c,conn):
-    """creates the connection table for teams and coaches
-
-    Args:
-        c: the cursor
-        conn: the connection to the db
-        
-    """
-
-    c.execute("""
-        CREATE TABLE TeamsCoaches(
-        id INTEGER PRIMARY KEY,
-        team_name text,
-        coach_name text)""")
-    conn.commit()
-
-def get_password(username):
-    """gets the password of a user
-
-    Args:
-        username: the username for whose password we are looking
-    Returns:
-        the password stored in the database
-        
-    """
-    conn = sqlite3.connect(database_name)
-    c = conn.cursor()
-    c.execute("Select password from Users where name = '{}'".format(username))
-    res = str(c.fetchone())
-    return clean_up_database_str(res)
-
-def is_coach(username):
-    """checks if the given username is a coach
-
-    Args:
-        username: the username that should be checked
-
-    Returns:
-        True if is a coach, False otherwise
-        
-    """
-    conn = sqlite3.connect(database_name)
-    c = conn.cursor()
-    c.execute("Select role from Users where name = '{}'".format(username))
-    res = str(c.fetchone())
-    res = clean_up_database_str(res)
-    if res == "1": return True
-    return False
-
-def get_teams_of_coach(c,conn,coach):
-    """gets all the teams a coach has
-
-    Args:
-        c: the cursor
-        conn: the connection to the db
-        coach: the name of the coach
-    
-    Returns:
-        a list of all the teams a coach has
-    """
-    c.execute("Select team_name from TeamsCoaches where coach_name = '{}'".format(coach))
-    return c.fetchall
-
-def change_password(username, newpassword):
-    """changes password in the database of a selected user
-
-    Args:
-        username: the username that should be checked
-        
-    """ 
-    conn = sqlite3.connect(database_name)
-    c = conn.cursor() 
-    password = cipher_text(newpassword)
-    c.execute("update Users set password= '{}' where username = {}".format(password,username))
-    conn.commit()
- 
-def clean_up_database_str(str):
-    """Removes unneded chars from the string, retrieved from the database
-
-    Args:
-        str: the string that should be parsed
-
-    Returns:
-        The fixed string
-
-    """
-    return str[3:-3] 
-
-
-def authenticate_user(username,password):
-    """chekcs if the given password matches the username
-
-    Args:
-        username: the string that should be used as username
-        password: the string that should be used as password
-
-    Returns:
-        True if that's the correct password, False otherwise
-    """
-
-    current_psswd = get_password(username)
-    password = cipher_text(password)
-    # print "pass is" + password 
-    # print "\ncurrent_psswd is" + current_psswd 
-
-    if current_psswd == password:
-        return True
-
-    # print "\n\n"
-    # print current_psswd,password
-    return False
