@@ -6,6 +6,14 @@ import sqlite3
 from cryptography.fernet import Fernet
 import re
 import cryptography
+
+import base64
+import os
+from cryptography.fernet import Fernet
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+
 from flask_login import current_user, LoginManager, login_user, logout_user, login_required
 
 # logging.basicConfig(filename='app_log.log', level=logging.DEBUG,format='%(asctime)s:%(message)s')
@@ -158,7 +166,6 @@ def register_team():
             c.execute("INSERT INTO {} VALUES(?, ?)".format("Teams(team_name,country)"), (name,country))
             c.execute("INSERT INTO {} VALUES(?, ?)".format("TeamsCoaches(team_name,coach_name)"), (name,coach))
             conn.commit()
-            print c.fetchall()
         elif is_coach(coach) == False:
             flash('Error: Not a valid coach.')
         else:
@@ -215,7 +222,8 @@ def register():
         email = request.form['email']
         role = request.form['options'] # coach - 1, competitor - 2
         print "role is " + role
-
+        drop_all_tables()
+        create_all_tables()
 
         ciphered_password = cipher_text(password)
 
@@ -250,7 +258,8 @@ def is_valid_email(email):
     Returns:
         True if it's a valid email, False otherwise
     """
-    is_valid_email = re.match('^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,4})$', email)
+    regex = '^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,4})$'
+    is_valid_email = re.match(regex, email)
     if is_valid_email is None:
         return False
     return True
@@ -265,7 +274,19 @@ def cipher_text(text_to_cipher):
         the ciphered text
     """
     string_to_bytes = str.encode(str(text_to_cipher))
-    return cipher_suite.encrypt(string_to_bytes)   #required to be bytes 
+    salt = os.urandom(16)
+    kdf = PBKDF2HMAC(
+        algorithm=hashes.SHA256(),
+        length=32,
+        salt=salt,
+        iterations=100000,
+        backend=default_backend()
+    )
+    password = b"password"
+    key = base64.urlsafe_b64encode(kdf.derive(password))
+    f = Fernet(key)
+    print f.decrypt(f.encrypt(string_to_bytes)  )
+    return f.encrypt(string_to_bytes)   
 
 def decipher_text(text_to_decipher):
     """decipers a string
@@ -275,7 +296,19 @@ def decipher_text(text_to_decipher):
     Returns:
         the unciphered text
     """
-    return cipher_suite.decrypt(text_to_decipher)
+    string_to_bytes = str.encode(str(text_to_decipher))
+    salt = os.urandom(16)
+    kdf = PBKDF2HMAC(
+        algorithm=hashes.SHA256(),
+        length=32,
+        salt=salt,
+        iterations=100000,
+        backend=default_backend()
+    )
+    password = b"password"
+    key = base64.urlsafe_b64encode(kdf.derive(password))
+    f = Fernet(key)
+    return f.decrypt(text_to_decipher)
 
 
 
@@ -285,7 +318,7 @@ def drop_all_tables():
     c = conn.cursor()
     c.execute("DROP TABLE Users")
     c.execute("DROP TABLE Teams")
-    # c.execute("DROP TABLE TeamsCoaches")
+    c.execute("DROP TABLE TeamsCoaches")
 
 
 def create_all_tables():
