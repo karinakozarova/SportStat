@@ -205,15 +205,22 @@ def login():
         password_input = request.form['password']
 
         database_password = get_password(username)
+        print database_password
         try:
             unciphered_text = decipher_text(database_password)
+            print database_password, unciphered_text
         except cryptography.fernet.InvalidToken:
             flash('Not the right password for that username')
             return render_template('login.html', error='Not the right password for that username')
         if unciphered_text == password_input:
             user = User()
             login_user(user)
-            return coach_or_competitor(username)
+            conn = sqlite3.connect(database_name)
+            c = conn.cursor()
+            role = get_role(c,conn,username)
+            # return coach_or_competitor(username)
+            email = get_email_from_username(c,conn,username)
+            return signed_in(role,username, email)
         else:
             error = 'Invalid Credentials. Please try again.' 
     return render_template('login.html', error=error)
@@ -237,9 +244,6 @@ def register():
         password = request.form['password']
         email = request.form['email']
         role = request.form['options'] # coach - 1, competitor - 2
-        print "role is " + role
-        drop_all_tables()
-        create_all_tables()
 
         ciphered_password = cipher_text(password)
 
@@ -247,21 +251,19 @@ def register():
             c.execute("INSERT INTO {} VALUES(?, ?, ?, ?)".format("Users(name,email,password,role)"), (name,email,ciphered_password,role))
             conn.commit()
             
-            print role
-            if role == str(2):
-                # insert_info(name, email)
-                return render_template("competitors_information.html", name = name, email = email,verify = True)
-            else:
-                return render_template("signed_in.html", name = name, email = email,verify = True)
-
-            user = User()
-            login_user(user)
+            return signed_in(role,name,email)
         elif is_valid_email == False:
             flash('Error: That is not a valid email address')
         else:
             flash('Error: All the form fields are required. Mail must be at least 6 chars and the password - at least 3')
     return render_template('register.html', form=form)
 
+def signed_in(role,name,email):
+    if role == str(2):
+        # insert_info(name, email)
+        return render_template("competitors_information.html", name = name, email = email,verify = True)
+    else:
+        return render_template("signed_in.html", name = name, email = email,verify = True)
 @app.errorhandler(404)
 def page_not_found(e):
     return render_template('404.html'), 404
@@ -304,7 +306,13 @@ def decipher_text(text_to_decipher):
     return f.decrypt(string_to_bytes(text_to_decipher))
 
 def get_fernet_key():
-    salt = os.urandom(16)
+    """gets an instance of a class that handles salting and encryption of passwords
+
+    Returns:
+        an instance of the Fernet class
+    """
+
+    salt = bytes(10)
     kdf = PBKDF2HMAC(
         algorithm=hashes.SHA256(),
         length=32,
@@ -315,6 +323,7 @@ def get_fernet_key():
     password = b"password"
     key = base64.urlsafe_b64encode(kdf.derive(password))
     return Fernet(key)
+
 def string_to_bytes(text):
     """converts a string to bytes
 
@@ -359,7 +368,33 @@ def create_table_for_users(c,conn):
     )""")
     conn.commit()
 
+def get_role(c,conn,username):
+    """gets what is the role of the suer with username
+    
+    Args:
+        c: the cursor
+        conn: the connection to the db
+        username: the username that should be checked to see if it's a competitor or coach
+        
+    """
+    c.execute("Select role from Users where name = '{}'".format(username))
+    res = c.fetchone()
+    print "role is " + str(res)
+    return res    
 
+def get_email_from_username(c,conn,username):
+    """gets what is the email 
+    
+    Args:
+        c: the cursor
+        conn: the connection to the db
+        username: the username that should be used
+        
+    """
+    c.execute("Select email from Users where name = '{}'".format(username))
+    res = c.fetchone()
+    print "mail is " + str(res)
+    return res 
 def create_table_for_teams(c,conn):
     """creates the table for the teams
 
