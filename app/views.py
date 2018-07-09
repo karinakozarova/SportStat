@@ -29,15 +29,16 @@ class RegistrationForm(Form):
  
 class TeamsForm(Form):
     name = TextField('Name:', validators=[validators.required()])
+    coach = TextField('Coach:',validators=[validators.required()])
     country = TextField('Country:',validators=[validators.required()])
 
 class CompetitorsForm(Form):
     name = TextField('Name:', validators=[validators.required()])
-    email = TextField('email:',validators=[validators.required()])
-    age = TextField('age:',validators=[validators.required()])
-    weight = TextField('weight:',validators=[validators.required()])
-    height = TextField('height:',validators=[validators.required()])
-    coach = TextField('coach:',validators=[validators.required()])
+    email = TextField('Email:',validators=[validators.required()])
+    age = TextField('Age:',validators=[validators.required(),validators.Length(min=1, max=3)])
+    weight = TextField('Weight:',validators=[validators.required(),validators.Length(min=2, max=4)])
+    height = TextField('Height:',validators=[validators.required(),validators.Length(min=2, max=4)])
+    coach = TextField('Coach:',validators=[validators.required()])
 
 
 class User:
@@ -88,7 +89,6 @@ def insert_info(name = "Guest", email = "none"):
     form = CompetitorsForm(request.form)
     print form.errors
     if request.method == 'POST':
-        print "GEREERERER"
         conn = sqlite3.connect("test.db")
         c = conn.cursor()
 
@@ -151,14 +151,16 @@ def register_team():
 
         name = request.form['name']
         country = request.form['country']
+        coach = request.form['coach']
 
-        if form.validate():
+        if form.validate() and is_coach(coach):
             c.execute("INSERT INTO {} VALUES(?, ?)".format("Teams(team_name,country)"), (name,country))
             conn.commit()
             is_logged_in = True
+        elif is_coach(coach) == False:
+            flash('Error: Not a valid coach.')
         else:
             flash('Error: All the form fields are required.')
-        print is_logged_in
     return render_template('register_team.html', form=form)
 
 
