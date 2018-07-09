@@ -150,12 +150,13 @@ def authentication():
 
 
 @login_required
-@app.route('/competitor', methods=['GET', 'POST'])
+@app.route('/competitors')
 def competitor():
-    error = None
-    if request.method == 'POST':
-        password_input = request.form['submit']
-    return render_template('competitors_information.html', error=error)
+    conn = sqlite3.connect(database_name)
+    c = conn.cursor()
+    competitors = get_all_competitors(c,conn)
+    print competitors
+    return render_template('competitor.html',competitors = competitors)
 
 
 @app.route('/competitors_information', methods=['GET', 'POST'])
@@ -173,29 +174,18 @@ def insert_info(name = "Guest", email = "none"):
         conn = sqlite3.connect(database_name)
         c = conn.cursor()
 
-        print height,weight,age,teamname
+        database_password = get_password(username)
+        try:
+            unciphered_text = decipher_text(database_password)
+        except cryptography.fernet.InvalidToken:
+            flash('Not the right password for that username')
+        if unciphered_text == password_input:
+            # that's the right password
+            print "Right credentials"
+            new_competitor(c,conn,teamname,username,age,height,weight)
+        else:
+            error = 'Invalid Credentials. Please try again.'
     return render_template('competitors_information.html', error=error)
-
-    # form = CompetitorsForm(request.form)
-    # print form.errors
-    # if request.method == 'POST':
-    #     conn = sqlite3.connect(database_name)
-    #     c = conn.cursor()
-
-    #     name = request.form['name']
-    #     email = request.form['email']
-    #     age = request.form['age']
-    #     weight = request.form['weight']
-    #     height = request.form['height']
-    #     coach = request.form['coach']
-
-    #     if form.validate():
-    #        print name,email,age,weight,height,coach
-    #     else:
-    #         flash('Error: All the form fields are required.')
-    #     print is_logged_in
-    # else:
-    #     return render_template("competitors_information.html", verify = False)
 
 
 @app.route('/teams')
@@ -402,8 +392,8 @@ def create_competitors_table(c,conn):
     c.execute("""
         CREATE TABLE Competitors(
         id INTEGER PRIMARY KEY,
-        team_id text,
-        competitor_id text,
+        teamname text,
+        competitorname text,
         age text,
         height text,
         weight text)""")
@@ -415,6 +405,20 @@ def create_competitors_table(c,conn):
                         DATABASE QUERIES SECTION
 ------------------------------------------------------------------------
 """
+
+def get_all_competitors(c,conn):
+    c.execute("Select competitorname from Competitors")
+    coaches = c.fetchall()
+    for coach in coaches:
+        print coach
+        coach = clean_up_database_str(coach)
+        print coach
+    return coaches
+
+def new_competitor(c,conn,teamname,competitorname,age,height,weight):
+    c.execute("INSERT INTO {} VALUES(?, ?, ?, ?, ?)".format("Competitors(teamname,competitorname,age,height,weight)"), (teamname,competitorname,age,height,weight))
+    conn.commit()
+    print "Successfully registered a competitor"
 
 def get_role(c,conn,username):
     """gets what is the role of the suer with username
