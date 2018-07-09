@@ -408,12 +408,17 @@ def create_competitors_table(c,conn):
 
 def get_all_competitors(c,conn):
     c.execute("Select competitorname from Competitors")
-    coaches = c.fetchall()
-    for coach in coaches:
-        print coach
-        coach = clean_up_database_str(coach)
-        print coach
-    return coaches
+    competitors = []
+
+    while True:
+        res = c.fetchone()
+        if res is None:
+            break
+        else:
+            competitors.append(res[0])
+            stringRes = ''.join(res)
+        print competitors
+    return competitors
 
 def new_competitor(c,conn,teamname,competitorname,age,height,weight):
     c.execute("INSERT INTO {} VALUES(?, ?, ?, ?, ?)".format("Competitors(teamname,competitorname,age,height,weight)"), (teamname,competitorname,age,height,weight))
