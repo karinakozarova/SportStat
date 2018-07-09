@@ -67,13 +67,20 @@ class User:
     def __init__(self):
         pass
 
-@app.route('/authentication')
+@app.route('/change_password', methods=['GET', 'POST'])
 def authentication():
-    if current_user.is_authenticated:
-        print "AUTHENTICAAATED"
-    else:
-        print "shit.."
-    return render_template('under_development.html')
+    if request.method == 'POST':
+        conn = sqlite3.connect(database_name)
+        c = conn.cursor()
+
+        name = request.form['username']
+        oldpassword = request.form['oldpassword']
+        password = request.form['password']
+
+        print name,oldpassword,password
+        authenticate_user(name,oldpassword)
+    return render_template("change_password.html")
+
 
 @app.route('/forgotten_password')
 def render_underconstruction():
@@ -173,6 +180,8 @@ def register_team():
             c.execute("INSERT INTO {} VALUES(?, ?)".format("Teams(team_name,country)"), (name,country))
             c.execute("INSERT INTO {} VALUES(?, ?)".format("TeamsCoaches(team_name,coach_name)"), (name,coach))
             conn.commit()
+            print "HERE"
+            return render_template('succesfully_registered_team.html',teamname = name,coach = coach, country = country)
         elif is_coach(coach) == False:
             flash('Error: Not a valid coach.')
         else:
@@ -454,3 +463,27 @@ def clean_up_database_str(str):
 
     """
     return str[3:-3] 
+
+
+def authenticate_user(username,password):
+    """chekcs if the given password matches the username
+
+    Args:
+        username: the string that should be used as username
+        password: the string that should be used as password
+
+    Returns:
+        True if that's the correct password, False otherwise
+    """
+
+    current_psswd = get_password(username)
+    password = cipher_text(password)
+    # print "pass is" + password 
+    # print "\ncurrent_psswd is" + current_psswd 
+
+    if current_psswd == password:
+        return True
+
+    # print "\n\n"
+    # print current_psswd,password
+    return False
