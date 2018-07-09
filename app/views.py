@@ -131,7 +131,19 @@ def authentication():
         oldpassword = request.form['oldpassword']
         password = request.form['password']
 
-        print name,oldpassword,password
+        password = cipher_text(password)
+
+        pswd = get_password(name)
+        pswd = decipher_text(pswd)
+
+        print pswd,oldpassword
+        if str(pswd) == str(oldpassword):
+            print "Passwords match"
+            change_password(name,password)
+            print "Success in changing psswd"
+        else: 
+            flash('Error: Wrong password')
+
         authenticate_user(name,oldpassword)
     return render_template("change_password.html")
 
@@ -473,7 +485,7 @@ def change_password(username, newpassword):
     conn = sqlite3.connect(database_name)
     c = conn.cursor() 
     password = cipher_text(newpassword)
-    c.execute("update Users set password= '{}' where username = {}".format(password,username))
+    c.execute("update Users set password= '{}' where name = '{}'".format(password,username))
     conn.commit()
  
 
