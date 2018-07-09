@@ -16,6 +16,7 @@ cipher_suite = Fernet(key)
 login_manager = LoginManager()
 login_manager.init_app(app)
 
+database_name = "test.db"
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -89,7 +90,7 @@ def insert_info(name = "Guest", email = "none"):
     form = CompetitorsForm(request.form)
     print form.errors
     if request.method == 'POST':
-        conn = sqlite3.connect("test.db")
+        conn = sqlite3.connect(database_name)
         c = conn.cursor()
 
         name = request.form['name']
@@ -121,7 +122,7 @@ def team_stats():
 
 @app.route('/teams')
 def test_route():
-    conn = sqlite3.connect("test.db")
+    conn = sqlite3.connect(database_name)
     c = conn.cursor()
     c.execute("select team_name from Teams")
 
@@ -146,7 +147,7 @@ def register_team():
     form = TeamsForm(request.form)
     print form.errors
     if request.method == 'POST':
-        conn = sqlite3.connect("test.db")
+        conn = sqlite3.connect(database_name)
         c = conn.cursor()
 
         name = request.form['name']
@@ -156,7 +157,6 @@ def register_team():
         if form.validate() and is_coach(coach):
             c.execute("INSERT INTO {} VALUES(?, ?)".format("Teams(team_name,country)"), (name,country))
             conn.commit()
-            is_logged_in = True
         elif is_coach(coach) == False:
             flash('Error: Not a valid coach.')
         else:
@@ -201,7 +201,7 @@ def register():
     print form.errors
 
     if request.method == 'POST':
-        conn = sqlite3.connect("test.db")
+        conn = sqlite3.connect(database_name)
         c = conn.cursor()
      
         # create_table_for_users(c,conn)
@@ -274,16 +274,33 @@ def decipher_text(text_to_decipher):
     """
     return cipher_suite.decrypt(text_to_decipher)
 
+
+
+def drop_all_tables():
+    """ drops all database tables"""
+    conn = sqlite3.connect(database_name)
+    c = conn.cursor()
+    c.execute("DROP TABLE Users")
+    c.execute("DROP TABLE Teams")
+    c.execute("DROP TABLE TeamsCoaches")
+
+
+def create_all_tables():
+    """ creates all database tables"""
+    conn = sqlite3.connect(database_name)
+    c = conn.cursor()
+    create_table_for_teams(c,conn)
+    create_table_for_users(c,conn)
+    create_teams_coach_table(c,conn)
+
 def create_table_for_users(c,conn):
     """creates the table for the teams
     
     Args:
-        c: the cursoer
+        c: the cursor
         conn: the connection to the db
         
     """
-    c.execute("""DROP TABLE Users""")
-
     c.execute(""" CREATE TABLE Users(
         id INTEGER PRIMARY KEY,
         name text,
@@ -298,17 +315,32 @@ def create_table_for_teams(c,conn):
     """creates the table for the teams
 
     Args:
-        c: the cursoer
+        c: the cursor
         conn: the connection to the db
         
     """
-    c.execute("""DROP TABLE Teams""")
-
     c.execute("""
         CREATE TABLE Teams(
         id INTEGER PRIMARY KEY,
         team_name text,
         country text)""")
+    conn.commit()
+
+
+def create_teams_coach_table(c,conn):
+    """creates the connection table for teams and coaches
+
+    Args:
+        c: the cursor
+        conn: the connection to the db
+        
+    """
+
+    c.execute("""
+        CREATE TABLE TeamsCoaches(
+        id INTEGER PRIMARY KEY,
+        team_name text,
+        coach_name text)""")
     conn.commit()
 
 def get_password(username):
@@ -320,7 +352,7 @@ def get_password(username):
         the password stored in the database
         
     """
-    conn = sqlite3.connect("test.db")
+    conn = sqlite3.connect(database_name)
     c = conn.cursor()
     c.execute("Select password from Users where name = '{}'".format(username))
     res = str(c.fetchone())
@@ -336,7 +368,7 @@ def is_coach(username):
         True if is a coach, False otherwise
         
     """
-    conn = sqlite3.connect("test.db")
+    conn = sqlite3.connect(database_name)
     c = conn.cursor()
     c.execute("Select role from Users where name = '{}'".format(username))
     res = str(c.fetchone())
@@ -351,7 +383,7 @@ def change_password(username, newpassword):
         username: the username that should be checked
         
     """ 
-    conn = sqlite3.connect("test.db")
+    conn = sqlite3.connect(database_name)
     c = conn.cursor() 
     password = cipher_text(newpassword)
     c.execute("update Users set password= '{}' where username = {}".format(password,username))
