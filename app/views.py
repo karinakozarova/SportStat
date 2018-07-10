@@ -433,26 +433,32 @@ def get_all_competitors(c,conn):
     return competitors
 
 def new_competitor(c,conn,teamname,competitorname,age,height,weight):
+    """ Creates a new competitor and adds him to the database. 
+        If competitor already exists - updates some values.
+
+    Args:
+        c: the cursor
+        conn: the connection to the db
+        teamname: the name that the competitor is registered at
+        competitorname: the name of the competitor
+        age: the age of the competitor
+        height: the height of the competito
+        weight: the weight of the competito
+    Returns:
+        True if created a competitor, False if updated a competitor
+        
+    """
     c.execute("Select id from Competitors where teamname = '{}' and competitorname = '{}'".format(teamname,competitorname))
     res = c.fetchone()
     if res is None : 
         c.execute("INSERT INTO {} VALUES(?, ?, ?, ?, ?)".format("Competitors(teamname,competitorname,age,height,weight)"), (teamname,competitorname,age,height,weight))
         conn.commit()
-        print "Successfully registered a competitor"
-        flash("Success!!!")
         return True
-    else:
-        print "Already in database"
-
+    else: # Already in database
         c.execute("""update Competitors set age = '{}',height = '{}',
             weight = '{}' where teamname = '{}' and competitorname = '{}'"""
             .format(age,height,weight,teamname,competitorname))
         conn.commit() 
-
-        print "succesfully updated"
-        c.execute("select * from Competitors where teamname = '{}' and competitorname = '{}'".format(teamname,competitorname))
-        print c.fetchall()
-
         return False
 
 def get_role(c,conn,username):
