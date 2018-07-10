@@ -122,6 +122,30 @@ def team_stats():
 def render_underconstruction():
     return render_template('under_development.html')
 
+@app.route('/')
+@app.route('/coach_teams')
+def coach_teams():
+    if request.method == 'POST':
+        username = request.form['username']
+        password_input = request.form['password']
+
+        database_password = get_password(username)
+
+        unciphered_text = "123"
+        try:
+            unciphered_text = decipher_text(database_password)
+        except cryptography.fernet.InvalidToken:
+            flash('Not the right password for that username')
+            return render_template('coach_teams.html', error='Not the right password for that username',not_logged_in = True)
+        if unciphered_text == password_input:
+            # successfully logged in
+            return render_template("coach_teams.html", logged_in = True, names = names)
+
+        else:
+            error = 'Invalid Credentials. Please try again.' 
+    return render_template("coach_teams.html",not_logged_in = True)
+
+
 @login_required
 @app.route('/change_password', methods=['GET', 'POST'])
 def authentication():
@@ -169,6 +193,7 @@ def competitor():
 def insert_info(name = "Guest", email = "none"):
 
     error = None
+    success = None
     if request.method == 'POST':
         username = request.form['username']
         password_input = request.form['password']
@@ -182,6 +207,7 @@ def insert_info(name = "Guest", email = "none"):
 
         database_password = get_password(username)
         unciphered_text = "a"
+        success = "a"
         try:
             unciphered_text = decipher_text(database_password)
         except cryptography.fernet.InvalidToken:
@@ -197,7 +223,8 @@ def insert_info(name = "Guest", email = "none"):
 
         else:
             error = 'Invalid Credentials. Please try again.'
-    return render_template('competitors_information.html', error=error,success = success)
+    
+    return render_template('competitors_information.html', error = error, success = success)
 
 
 @app.route('/teams')
@@ -697,4 +724,4 @@ def signed_in(role,name,email):
         return redirect("http://127.0.0.1:5000/competitors_information")
         # return render_template("competitors_information.html", name = name, email = email,verify = True)
     else:
-        return render_template("signed_in.html", name = name, email = email,verify = True)
+        return render_template("signed_in.html", name = name, email = email,verify = True,coach = True)

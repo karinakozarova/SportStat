@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Teams{% endblock %}
+{% block body %}
+<br>
+<div class="jumbotron">
+  <h1>Teams</h1>
+    <div class="container-fluid">
+    	{% if error %}
+    	  <p class="error"><strong>Error:</strong> {{ error }}
+    	{% endif %}
+    	{% if not_logged_in %}
+
+    	<form action="" method="post">
+    	  <label for="name">Username:</label>
+    	  <input type="text" class="form-control" placeholder="Username" name="username" value="{{
+    	    request.form.username }}"> 
+    	    <br>
+
+    	  <label for="password">Password: </label>
+
+    	  <input type="password" class="form-control" placeholder="Password" name="password" value="{{
+    	    request.form.password }}">
+    	  <br>        
+
+    	  <button type="submit" class="btn btn-success btn-block" value="Login">Login</button>
+    	</form>
+    	{% endif %}
+    	{% if logged_in %}
+
+	    <div class="row">
+		  <p class="lead">Here are all the teams:</p>
+		    {% for name in names %}
+		        <div class="col-sm-6 col-md-5" style="padding-right: 3%;padding-left: 3%; padding-bottom: 3%">
+		            <div class="container">
+		                <h2>{{name}}</h2>
+		            </div>
+		        </div>
+		        
+		    {% endfor %}
+		</div>
+		{% endif %}
+    </div>
+</div>
+{% endblock %}
