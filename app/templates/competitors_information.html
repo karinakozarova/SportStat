@@ -2,12 +2,24 @@
 {% block title %}Competitiors information{% endblock %}
 {% block body %}
 <br>
+{% if error %}
+<div class="alert alert-danger">
+  <p class="error"  class="alert alert-danger"><strong>Error:</strong> {{ error }} </p>
+</div>
+{% endif %}
+
+
+{% if success %}
+<div class="alert alert-success">
+  <p class="success"  class="alert alert-success"><strong>success:</strong> {{ success }}
+  </p> 
+</div>
+{% endif %}
+
 <div class="jumbotron">
   <h1>Register: part 2</h1>
       <br>
-      {% if error %}
-        <p class="error"  class="alert alert-danger"><strong>Error:</strong> {{ error }}
-      {% endif %}
+
       <form action="" method="post">
         <label for="name">Username:</label>
         <input type="text" class="form-control" placeholder="Username" name="username" value="{{
@@ -31,7 +43,7 @@
         <input type="text" class="form-control" id="age" name="age" value="{{request.form.age }}"  placeholder="What's your age,{{name}}?">
         <br>
 
-        <label style = "font-size: large" for="name">teamname</label>
+        <label style = "font-size: large" for="name">Тeam name</label>
         <input type="text" class="form-control" id="teamname" name="teamname" placeholder="What's your teamname?" value="{{request.form.teamname }}">
         <br>
         <button type="submit" class="btn btn-success btn-block" value="Login">Update information</button>

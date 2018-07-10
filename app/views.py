@@ -122,6 +122,7 @@ def team_stats():
 def render_underconstruction():
     return render_template('under_development.html')
 
+@login_required
 @app.route('/change_password', methods=['GET', 'POST'])
 def authentication():
     if request.method == 'POST':
@@ -188,10 +189,15 @@ def insert_info(name = "Guest", email = "none"):
         if unciphered_text == password_input:
             # that's the right password
             print "Right credentials"
-            new_competitor(c,conn,teamname,username,age,height,weight)
+            competitor = new_competitor(c,conn,teamname,username,age,height,weight)
+            if competitor:
+                success = "Successfully registered this competitor!"
+            else:
+                success = "Successfully updated this competitor!"
+
         else:
             error = 'Invalid Credentials. Please try again.'
-    return render_template('competitors_information.html', error=error)
+    return render_template('competitors_information.html', error=error,success = success)
 
 
 @app.route('/teams')
@@ -214,6 +220,7 @@ def test_route():
             stringRes = ''.join(res)
 
     return render_template('teams.html', teams=teams,names=names,countries = countries,length_teams = len(teams))
+
 
 @login_required
 @app.route('/register_team', methods=['GET', 'POST'])
@@ -310,7 +317,6 @@ def register():
 @app.errorhandler(404)
 def page_not_found(e):
     return render_template('404.html'), 404
-
 
 """ 
 ------------------------------------------------------------------------
@@ -427,9 +433,27 @@ def get_all_competitors(c,conn):
     return competitors
 
 def new_competitor(c,conn,teamname,competitorname,age,height,weight):
-    c.execute("INSERT INTO {} VALUES(?, ?, ?, ?, ?)".format("Competitors(teamname,competitorname,age,height,weight)"), (teamname,competitorname,age,height,weight))
-    conn.commit()
-    print "Successfully registered a competitor"
+    c.execute("Select id from Competitors where teamname = '{}' and competitorname = '{}'".format(teamname,competitorname))
+    res = c.fetchone()
+    if res is None : 
+        c.execute("INSERT INTO {} VALUES(?, ?, ?, ?, ?)".format("Competitors(teamname,competitorname,age,height,weight)"), (teamname,competitorname,age,height,weight))
+        conn.commit()
+        print "Successfully registered a competitor"
+        flash("Success!!!")
+        return True
+    else:
+        print "Already in database"
+
+        c.execute("""update Competitors set age = '{}',height = '{}',
+            weight = '{}' where teamname = '{}' and competitorname = '{}'"""
+            .format(age,height,weight,teamname,competitorname))
+        conn.commit() 
+
+        print "succesfully updated"
+        c.execute("select * from Competitors where teamname = '{}' and competitorname = '{}'".format(teamname,competitorname))
+        print c.fetchall()
+
+        return False
 
 def get_role(c,conn,username):
     """gets what is the role of the suer with username
