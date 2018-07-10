@@ -420,6 +420,16 @@ def create_competitors_table(c,conn):
 """
 
 def get_all_competitors(c,conn):
+    """  gets a list of all the competitors
+
+    Args:
+        c: the cursor
+        conn: the connection to the db
+    
+    Returns:
+        tuple with the names of the competitors
+
+    """
     c.execute("Select competitorname from Competitors")
     competitors = []
 
@@ -444,9 +454,10 @@ def new_competitor(c,conn,teamname,competitorname,age,height,weight):
         age: the age of the competitor
         height: the height of the competito
         weight: the weight of the competito
+    
     Returns:
         True if created a competitor, False if updated a competitor
-        
+
     """
     c.execute("Select id from Competitors where teamname = '{}' and competitorname = '{}'".format(teamname,competitorname))
     res = c.fetchone()
@@ -462,13 +473,16 @@ def new_competitor(c,conn,teamname,competitorname,age,height,weight):
         return False
 
 def get_role(c,conn,username):
-    """gets what is the role of the suer with username
+    """gets what is the role of the user with username
     
     Args:
         c: the cursor
         conn: the connection to the db
         username: the username that should be checked to see if it's a competitor or coach
-        
+
+    Returns:
+        the role of the user
+
     """
     c.execute("Select role from Users where name = '{}'".format(username))
     res = c.fetchone()
@@ -483,7 +497,10 @@ def get_email_from_username(c,conn,username):
         c: the cursor
         conn: the connection to the db
         username: the username that should be used
-        
+    
+    Returns:
+        the email of the user    
+
     """
     c.execute("Select email from Users where name = '{}'".format(username))
     res = c.fetchone()
@@ -495,6 +512,7 @@ def get_password(username):
 
     Args:
         username: the username for whose password we are looking
+    
     Returns:
         the password stored in the database
         
@@ -533,6 +551,7 @@ def get_teams_of_coach(c,conn,coach):
     
     Returns:
         a list of all the teams a coach has
+
     """
     c.execute("Select team_name from TeamsCoaches where coach_name = '{}'".format(coach))
     return c.fetchall
@@ -561,18 +580,14 @@ def matching_username_and_password(username,password):
 
     Returns:
         True if that's the correct password, False otherwise
+
     """
 
     current_psswd = get_password(username)
     password = cipher_text(password)
-    # print "pass is" + password 
-    # print "\ncurrent_psswd is" + current_psswd 
 
-    if current_psswd == password:
+    if current_psswd == password: # passwords match
         return True
-
-    # print "\n\n"
-    # print current_psswd,password
     return False
 
 
@@ -598,8 +613,10 @@ def is_valid_email(email):
 
     Args:
         email: the email that should be checked
+
     Returns:
         True if it's a valid email, False otherwise
+
     """
     regex = '^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,4})$'
     is_valid_email = re.match(regex, email)
@@ -613,8 +630,10 @@ def cipher_text(text_to_cipher):
 
     Args:
         text_to_cipher: the text that should be cipered
+
     Returns:
         the ciphered text
+
     """
     f = get_fernet_key()
     return f.encrypt(string_to_bytes(text_to_cipher))   
@@ -624,8 +643,10 @@ def decipher_text(text_to_decipher):
 
     Args:
         text_to_decipher: the text that should be decipered
+
     Returns:
         the unciphered text
+
     """
     f = get_fernet_key()
     return f.decrypt(string_to_bytes(text_to_decipher))
@@ -635,6 +656,7 @@ def get_fernet_key():
 
     Returns:
         an instance of the Fernet class
+
     """
 
     salt = bytes(10)
@@ -654,8 +676,10 @@ def string_to_bytes(text):
 
     Args:
         text: the text that should be converted
+
     Returns:
         the converted text
+
     """
     return str.encode(str(text))
 
