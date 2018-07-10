@@ -123,26 +123,27 @@ def render_underconstruction():
     return render_template('under_development.html')
 
 @app.route('/')
-@app.route('/coach_teams')
+@app.route('/coach_teams', methods=['GET', 'POST'])
 def coach_teams():
     if request.method == 'POST':
         username = request.form['username']
         password_input = request.form['password']
 
         database_password = get_password(username)
-
-        unciphered_text = "123"
+        teams = None
+        unciphered_text = "1"
         try:
             unciphered_text = decipher_text(database_password)
+            if unciphered_text == password_input:  # successfully logged in
+                conn = sqlite3.connect(database_name)
+                c = conn.cursor()
+                teams = get_teams_of_coach(c,conn,username)
+                return render_template("coach_teams.html", logged_in = True, teams = teams)
+            else:
+                error = 'Invalid Credentials. Please try again.' 
         except cryptography.fernet.InvalidToken:
             flash('Not the right password for that username')
-            return render_template('coach_teams.html', error='Not the right password for that username',not_logged_in = True)
-        if unciphered_text == password_input:
-            # successfully logged in
-            return render_template("coach_teams.html", logged_in = True, names = names)
-
-        else:
-            error = 'Invalid Credentials. Please try again.' 
+            return render_template('coach_teams.html', error='Not the right password for that username',logged_in = True)
     return render_template("coach_teams.html",not_logged_in = True)
 
 
@@ -206,8 +207,7 @@ def insert_info(name = "Guest", email = "none"):
         c = conn.cursor()
 
         database_password = get_password(username)
-        unciphered_text = "a"
-        success = "a"
+        unciphered_text = None
         try:
             unciphered_text = decipher_text(database_password)
         except cryptography.fernet.InvalidToken:
@@ -581,7 +581,15 @@ def get_teams_of_coach(c,conn,coach):
 
     """
     c.execute("Select team_name from TeamsCoaches where coach_name = '{}'".format(coach))
-    return c.fetchall
+    teams = []
+    while True:
+        res = c.fetchone()
+        if res is None:
+            break
+        else:
+            teams.append(res[0])
+            stringRes = ''.join(res)
+    return teams
 
 def change_password(username, newpassword):
     """changes password in the database of a selected user
