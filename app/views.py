@@ -180,6 +180,7 @@ def insert_info(name = "Guest", email = "none"):
         c = conn.cursor()
 
         database_password = get_password(username)
+        unciphered_text = "a"
         try:
             unciphered_text = decipher_text(database_password)
         except cryptography.fernet.InvalidToken:
@@ -249,6 +250,7 @@ def login():
 
         database_password = get_password(username)
         print database_password
+        unciphered_text = "123"
         try:
             unciphered_text = decipher_text(database_password)
             print database_password, unciphered_text
@@ -260,8 +262,8 @@ def login():
             login_user(user)
             conn = sqlite3.connect(database_name)
             c = conn.cursor()
-            role = get_role(c,conn,username)
             # return coach_or_competitor(username)
+            role = get_role(c,conn,username)
             email = get_email_from_username(c,conn,username)
             return signed_in(role,username, email)
         else:
@@ -637,7 +639,8 @@ def coach_or_competitor(username):
 
 def signed_in(role,name,email):
     if role == str(2):
-        # insert_info(name, email)
-        return render_template("competitors_information.html", name = name, email = email,verify = True)
+        redirect_code = 302
+        return redirect("http://127.0.0.1:5000/competitors_information")
+        # return render_template("competitors_information.html", name = name, email = email,verify = True)
     else:
         return render_template("signed_in.html", name = name, email = email,verify = True)

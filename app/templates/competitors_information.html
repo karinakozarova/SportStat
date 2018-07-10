@@ -5,6 +5,9 @@
 <div class="jumbotron">
   <h1>Register: part 2</h1>
       <br>
+      {% if error %}
+        <p class="error"  class="alert alert-danger"><strong>Error:</strong> {{ error }}
+      {% endif %}
       <form action="" method="post">
         <label for="name">Username:</label>
         <input type="text" class="form-control" placeholder="Username" name="username" value="{{
@@ -30,14 +33,12 @@
 
         <label style = "font-size: large" for="name">teamname</label>
         <input type="text" class="form-control" id="teamname" name="teamname" placeholder="What's your teamname?" value="{{request.form.teamname }}">
-
-        <button type="submit" class="btn btn-success btn-block" value="Login">Login</button>
+        <br>
+        <button type="submit" class="btn btn-success btn-block" value="Login">Update information</button>
 
       </form>
       <br>
-      {% if error %}
-        <p class="error"><strong>Error:</strong> {{ error }}
-      {% endif %}
+
     </div>
 
 </div>
