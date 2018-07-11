@@ -107,13 +107,36 @@ def stream():
 @login_required
 @app.route('/new_event', methods=['GET', 'POST'])
 def create_event():
-    return render_template("new_event.html")
+    if request.method == 'POST':
+        username = request.form['username']
+        password_input = request.form['password']
+        eventname = request.form['name']
+        eventdescription = request.form['eventdescription']
+        location = request.form['location']
+        eventdate = request.form['eventdate']
+
+        hostname = username
+
+        database_password = get_password(username)
+        unciphered_text = "1"
+        try:
+            unciphered_text = decipher_text(database_password)
+            if unciphered_text == password_input:  # successfully logged in
+                conn = sqlite3.connect(database_name)
+                c = conn.cursor()
+
+                return render_template("new_event.html", logged_in = True)
+            else:
+                error = 'Invalid Credentials. Please try again.' 
+        except cryptography.fernet.InvalidToken:
+            flash('Not the right password for that username')
+            return render_template('new_event.html', error='Not the right password for that username',not_logged_in = True)
+    return render_template("new_event.html",not_logged_in = True)
 
 @app.route('/calendar')
 def calendar():
    conn = sqlite3.connect(database_name)
    c = conn.cursor()
-
 
    return render_template("calendar.html")
 
@@ -373,6 +396,7 @@ def drop_all_tables():
     c.execute("DROP TABLE Teams")
     c.execute("DROP TABLE TeamsCoaches")
     c.execute("DROP TABLE Competitors")
+    c.execute("DROP TABLE Events")
 
 def create_all_tables():
     """ creates all database tables"""

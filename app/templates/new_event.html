@@ -6,30 +6,54 @@
       <h2> <i class="glyphicon glyphicon-globe"></i>  Create Event </h2>
       <div class="container-fluid">
       {% if error %}
+
       <div class="alert alert-danger">
         <p class="error"  class="alert alert-danger"><strong>Error:</strong> {{ error }} </p>
       </div>
       {% endif %}
 
+      {% if logged_in %}
+      <br>
+      <div class="alert alert-success">
+        <p class="error"  class="alert alert-success">You have successfully created an event!</p>
+      </div>
+      {% else %}
+          <form action="" method="post">
+            <label for="name">Username:</label>
+            <input type="text" class="form-control" placeholder="Username" name="username" value="{{
+              request.form.username }}"> 
+              <br>
 
-        <form action="" method="post">
+            <label for="password">Password: </label>
+
+            <input type="password" class="form-control" placeholder="Password" name="password" value="{{
+              request.form.password }}">
+            <br>        
+
             <label for="eventname">Event Name: </label>
-            <input class="form-control" name="eventName" placeholder="Event name" type="text" /> <br>
+            <input type="text" class="form-control" placeholder="name" name="name" value="{{
+              request.form.name }}"> 
+              <br>
+
+            <label for="location">location: </label>
+            <input type="location" class="form-control" placeholder="location" name="location" value="{{
+              request.form.location }}">
+            <br>        
 
             <label for="eventdescription">Event Description: </label>
-            <textarea name="message" id="message" class="form-control" placeholder=" Enter the evenet description here..."> </textarea>
-
-            <label for="teamname">Teamname: </label>
-            <input type="teamname" class="form-control" placeholder="teamname" name="teamname" value="{{
-              request.form.teamname}}">
-            <br> 
+            <textarea class="form-control" placeholder="eventdescription" name="eventdescription" value="{{
+              request.form.eventdescription }}" placeholder=" Enter the evenet description here..."> </textarea>
+              <br>
 
             <label for="eventdate">Event date: </label>
-            <input type="date" name="date" class="form-control" > 
+            <input type="date" class="form-control" placeholder="eventdate" name="eventdate" value="{{
+              request.form.eventdate }}"> 
             <br>
-          <button type="submit" class="btn btn-success btn-block" value="Login">Login</button>
-        </form>
+            <button type="submit" class="btn btn-success btn-block" value="Login">Create Events</button>
+          </form>
 
+      {% endif %}
+      
       </div>
 </div>
 {% endblock %}
