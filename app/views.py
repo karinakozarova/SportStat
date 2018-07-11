@@ -213,9 +213,8 @@ def authentication():
         if str(database_password) == str(oldpassword):
             print "Correct login credentials"
             change_password(name,password)
-            print "Successfully changed the password"
         else: 
-            print "WRONG PSSWD"
+            print "Wrong login credentials"
     return render_template("change_password.html")
 
 
@@ -225,7 +224,6 @@ def competitor():
     conn = sqlite3.connect(database_name)
     c = conn.cursor()
     competitors = get_all_competitors(c,conn)
-    print competitors
     return render_template('competitor.html',competitors = competitors)
 
 
@@ -303,7 +301,6 @@ def register_team():
             c.execute("INSERT INTO {} VALUES(?, ?)".format("Teams(team_name,country)"), (name,country))
             c.execute("INSERT INTO {} VALUES(?, ?)".format("TeamsCoaches(team_name,coach_name)"), (name,coach))
             conn.commit()
-            print "HERE"
             return render_template('succesfully_registered_team.html',teamname = name,coach = coach, country = country)
         elif is_coach(coach) == False:
             flash('Error: Not a valid coach.')
@@ -369,7 +366,6 @@ def register():
         else:
             flash('Error: All the form fields are required. Mail must be at least 6 chars and the password - at least 3')
     return render_template('register.html', form=form)
-
 
 
 
@@ -726,7 +722,7 @@ def change_password(username, newpassword):
     password = cipher_text(newpassword)
     c.execute("update Users set password= '{}' where name = '{}'".format(password,username))
     conn.commit()
- 
+    print "Successfully changed the password"
 
 
 def matching_username_and_password(username,password):
@@ -842,6 +838,15 @@ def string_to_bytes(text):
     return str.encode(str(text))
 
 def coach_or_competitor(username):
+    """converts a string to bytes
+
+    Args:
+        username: the user whose should be checked
+
+    Returns:
+        renders the competiotr template if user is comeptitor or the coach one if coach
+
+    """
     if is_coach(username) == True:
         print "This user is a coach"
         return render_template("signed_in.html",loggedin = True)
@@ -850,6 +855,17 @@ def coach_or_competitor(username):
         return render_template("competitor.html", loggedin = True) 
 
 def signed_in(role,name,email):
+    """signs in user
+
+    Args:
+        role: are you coach or competitor
+        name: the username for signing
+        email: the email for signing
+
+    Returns:
+        True if it's a valid email, False otherwise
+
+    """
     if role == str(2):
         redirect_code = 302
         return redirect("http://127.0.0.1:5000/competitors_information")
