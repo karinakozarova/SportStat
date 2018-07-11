@@ -1,57 +1,57 @@
-{% extends "base.html" %}
-{% block title %}Competitiors information{% endblock %}
+{% extends "base.html" %} 
+{% block title %}Competitiors information{% endblock %} 
 {% block body %}
-<br>
+<br> 
+
 {% if error %}
 <div class="alert alert-danger">
-  <p class="error"  class="alert alert-danger"><strong>Error:</strong> {{ error }} </p>
+    <p class="error" class="alert alert-danger"><strong>Error:</strong> {{ error }} </p>
 </div>
-{% endif %}
-
+{% endif %} 
 
 {% if success %}
 <div class="alert alert-success">
-  <p class="success"  class="alert alert-success"><strong>Success:</strong> {{ success }}
-  </p> 
+    <p class="success" class="alert alert-success"><strong>Success:</strong> {{ success }}
+    </p>
 </div>
 {% endif %}
 
 <div class="jumbotron">
-  <h1>Register: part 2</h1>
-      <br>
+    <h1>Register: part 2</h1>
+    <br>
 
-      <form action="" method="post">
+    <form action="" method="post">
         <label for="name">Username:</label>
         <input type="text" class="form-control" placeholder="Username" name="username" value="{{
-          request.form.username }}"> 
-          <br>
+          request.form.username }}">
+        <br>
 
-        <label for="password">Password: </label> 
+        <label for="password">Password: </label>
         <input type="password" class="form-control" placeholder="Password" name="password" value="{{
           request.form.password }}">
-        <br>  
+        <br>
 
-        <label style = "font-size: large" for="name">Height</label>
+        <label style="font-size: large" for="name">Height</label>
         <input type="text" class="form-control" id="height" name="height" placeholder="What's your height?" value="{{request.form.height }}">
         <br>
 
-        <label style = "font-size: large" for="name">Weight</label>
-        <input type="text" class="form-control" id="weight" name="weight" value="{{request.form.weight }}"  placeholder="What's your weight?">
+        <label style="font-size: large" for="name">Weight</label>
+        <input type="text" class="form-control" id="weight" name="weight" value="{{request.form.weight }}" placeholder="What's your weight?">
         <br>
 
-        <label style = "font-size: large" for="name">Age</label>
-        <input type="text" class="form-control" id="age" name="age" value="{{request.form.age }}"  placeholder="What's your age,{{name}}?">
+        <label style="font-size: large" for="name">Age</label>
+        <input type="text" class="form-control" id="age" name="age" value="{{request.form.age }}" placeholder="What's your age,{{name}}?">
         <br>
 
-        <label style = "font-size: large" for="name">Тeam name</label>
+        <label style="font-size: large" for="name">Тeam name</label>
         <input type="text" class="form-control" id="teamname" name="teamname" placeholder="What's your teamname?" value="{{request.form.teamname }}">
         <br>
         <button type="submit" class="btn btn-success btn-block" value="Login">Update information</button>
 
-      </form>
-      <br>
+    </form>
+    <br>
 
-    </div>
+</div>
 
 </div>
 

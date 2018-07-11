@@ -688,6 +688,7 @@ def get_teams_of_coach(c,conn,coach):
         if res is None:
             break
         else:
+            string_to_print = res[0] + ",coached by " + coach
             teams.append(res[0])
     return teams
 
@@ -852,6 +853,5 @@ def signed_in(role,name,email):
     if role == str(2):
         redirect_code = 302
         return redirect("http://127.0.0.1:5000/competitors_information")
-        # return render_template("competitors_information.html", name = name, email = email,verify = True)
     else:
         return render_template("signed_in.html", name = name, email = email,verify = True,coach = True)

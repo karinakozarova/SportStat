@@ -1,26 +1,26 @@
-{% extends "base.html" %}
+{% extends "base.html" %} 
 {% block title %}Calendar{% endblock %}
-{% block body %}
+ {% block body %}
 <br>
 <div class="jumbotron">
-  <h1>Calendar</h1>
+    <h1>Calendar</h1>
 
-  <a href ="/new_event">  
+    <a href="/new_event">  
   	<button type="submit" class="btn btn-success btn-large btn-block" style="margin: 2%;padding: 1%">Create a new event </button> 
   </a>
 
-  <div class="container-fluid">
-	    <div class="row">
-		  <h2 >Here are all the events:</h2>
-		    {% for event in events %}
-		        <div class="col-sm-6 col-md-5" style="padding-right: 3%;padding-left: 3%; padding-bottom: 3%">
-		            <div class="container">
-		                <h3>{{event}}</h3>
-		            </div>
-		        </div>
-		        
-		    {% endfor %}
-		</div>
+    <div class="container-fluid">
+        <div class="row">
+            <h2>Here are all the events:</h2>
+            {% for event in events %}
+            <div class="col-sm-6 col-md-5" style="padding-right: 3%;padding-left: 3%; padding-bottom: 3%">
+                <div class="container">
+                    <h3>{{event}}</h3>
+                </div>
+            </div>
+
+            {% endfor %}
+        </div>
     </div>
 </div>
 {% endblock %}
