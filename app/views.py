@@ -114,9 +114,28 @@ def payment():
     return render_template("pay.html")
 
 @login_required
-@app.route('/team_stats')
+@app.route('/team_stats', methods=['GET', 'POST'])
 def team_stats():
-   return render_template("team_stats.html")
+   if request.method == 'POST':
+       username = request.form['username']
+       password_input = request.form['password']
+       teamname = request.form['teamname']
+
+       database_password = get_password(username)
+       unciphered_text = "1"
+       try:
+           unciphered_text = decipher_text(database_password)
+           if unciphered_text == password_input:  # successfully logged in
+               conn = sqlite3.connect(database_name)
+               c = conn.cursor()
+               competitors = get_competitors_of_team(c,conn,teamname)
+               return render_template("team_stats.html", logged_in = True, competitors = competitors)
+           else:
+               error = 'Invalid Credentials. Please try again.' 
+       except cryptography.fernet.InvalidToken:
+           flash('Not the right password for that username')
+           return render_template('team_stats.html', error='Not the right password for that username',logged_in = True)
+   return render_template("team_stats.html",not_logged_in = True)
 
 @app.route('/forgotten_password')
 def render_underconstruction():
@@ -577,6 +596,28 @@ def get_teams_of_coach(c,conn,coach):
             teams.append(res[0])
     return teams
 
+def get_competitors_of_team(c,conn,teamname):
+    """gets all the teams a coach has
+
+    Args:
+        c: the cursor
+        conn: the connection to the db
+        coach: the name of the coach
+    
+    Returns:
+        a list of all the teams a coach has
+
+    """
+    c.execute("Select competitorname from Competitors where teamname = '{}'".format(teamname))
+    competitors = []
+    while True:
+        res = c.fetchone()
+        if res is None:
+            break
+        else:
+            competitors.append(res[0])
+            print res[0]
+    return competitors
 def change_password(username, newpassword):
     """changes password in the database of a selected user
 
