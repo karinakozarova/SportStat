@@ -158,25 +158,14 @@ def authentication():
         oldpassword = request.form['oldpassword']
         password = request.form['password']
 
+        database_password = decipher_text(get_password(name))
 
-        pswd = decipher_text(get_password(name))
-        print pswd,password
-
-        if str(pswd) == str(oldpassword):
-            print "Passwords match"
-            password = cipher_text(password)
-
+        if str(database_password) == str(oldpassword):
+            print "Correct login credentials"
             change_password(name,password)
-            print "Success in changing psswd"
-            c.execute("Select * from Users where name = 'admin'")
-            r = c.fetchall()
-            print r
+            print "Successfully changed the password"
         else: 
             print "WRONG PSSWD"
-            flash('Error: Wrong password')
-        print "auth PSSWD"
-
-        matching_username_and_password(name,oldpassword)
     return render_template("change_password.html")
 
 
@@ -244,8 +233,6 @@ def test_route():
         else:
             teams.append(res)
             names.append(res[0])
-            stringRes = ''.join(res)
-
     return render_template('teams.html', teams=teams,names=names,countries = countries,length_teams = len(teams))
 
 
@@ -588,7 +575,6 @@ def get_teams_of_coach(c,conn,coach):
             break
         else:
             teams.append(res[0])
-            stringRes = ''.join(res)
     return teams
 
 def change_password(username, newpassword):
