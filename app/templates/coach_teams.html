@@ -5,9 +5,11 @@
 <div class="jumbotron">
   <h1>Teams</h1>
     <div class="container-fluid">
-    	{% if error %}
-    	  <p class="error"><strong>Error:</strong> {{ error }}
-    	{% endif %}
+      {% if error %}
+      <div class="alert alert-danger">
+        <p class="error"  class="alert alert-danger"><strong>Error:</strong> {{ error }} </p>
+      </div>
+      {% endif %}
     	{% if not_logged_in %}
 
     	<form action="" method="post">
