@@ -31,24 +31,20 @@
             <br>        
 
             <label for="eventname">Event Name: </label>
-            <input type="text" class="form-control" placeholder="name" name="name" value="{{
+            <input type="text" class="form-control" placeholder="Enter the event name" name="name" value="{{
               request.form.name }}"> 
               <br>
 
             <label for="location">location: </label>
-            <input type="location" class="form-control" placeholder="location" name="location" value="{{
+            <input type="location" class="form-control" placeholder="Enter the event location" name="location" value="{{
               request.form.location }}">
             <br>        
 
             <label for="eventdescription">Event Description: </label>
-            <textarea class="form-control" placeholder="eventdescription" name="eventdescription" value="{{
-              request.form.eventdescription }}" placeholder=" Enter the evenet description here..."> </textarea>
+            <textarea class="form-control"  name="eventdescription" value="{{
+              request.form.eventdescription }}" placeholder=" Enter the event description here..."> </textarea>
               <br>
 
-            <label for="eventdate">Event date: </label>
-            <input type="date" class="form-control" placeholder="eventdate" name="eventdate" value="{{
-              request.form.eventdate }}"> 
-            <br>
             <button type="submit" class="btn btn-success btn-block" value="Login">Create Events</button>
           </form>
 

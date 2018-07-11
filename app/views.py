@@ -113,7 +113,6 @@ def create_event():
         eventname = request.form['name']
         eventdescription = request.form['eventdescription']
         location = request.form['location']
-        eventdate = request.form['eventdate']
 
         hostname = username
 
@@ -124,7 +123,7 @@ def create_event():
             if unciphered_text == password_input:  # successfully logged in
                 conn = sqlite3.connect(database_name)
                 c = conn.cursor()
-
+                create_event(c,conn,eventname,eventdescription,hostname,location)
                 return render_template("new_event.html", logged_in = True)
             else:
                 error = 'Invalid Credentials. Please try again.' 
@@ -137,8 +136,8 @@ def create_event():
 def calendar():
    conn = sqlite3.connect(database_name)
    c = conn.cursor()
-
-   return render_template("calendar.html")
+   events = get_all_events(c,conn)
+   return render_template("calendar.html",events = events)
 
 @login_required
 @app.route('/pay')
@@ -494,7 +493,6 @@ def create_events_table(c,conn):
         eventname text,
         eventdescription text,
         hostname text,
-        eventdate NUMERIC,
         location text)""")
     conn.commit()
     print "Created evenets table.."
@@ -506,6 +504,27 @@ def create_events_table(c,conn):
 ------------------------------------------------------------------------
 """
 
+def create_event(c,conn,name,description,host,location):
+    """  gets a list of all the competitors
+
+    Args:
+        c: the cursor
+        conn: the connection to the db
+        name: event name
+        description: description of the event
+        host: nme of the event host(coach)
+        location: the address of the event
+    
+    Returns:
+        tuple with the names of the events
+
+    """   
+
+    c.execute("INSERT INTO {} VALUES(?, ?, ?, ?)"
+        .format("Events(eventname,eventdescription,hostname,location)"), (name,description,host,location))
+ 
+    conn.commit()
+    print "successfully created event"
 def get_all_competitors(c,conn):
     """  gets a list of all the competitors
 
@@ -539,7 +558,7 @@ def get_all_events(c,conn):
         tuple with the names of the events
 
     """
-    c.execute("Select eventname from Events")
+    c.execute("Select eventname,eventdescription,hostname,location from Events")
     events = []
 
     while True:
@@ -547,7 +566,8 @@ def get_all_events(c,conn):
         if res is None:
             break
         else:
-            events.append(res[0])
+            string_to_print =  "Event name: " + res[0] +"\n" + "\nEvent description: " + res[1]+" \n" + "\nHosted by:  " + res[2] + "\n" +"\n Location: " + res[3] + "\n"
+            events.append(string_to_print)
     return events
 
 def new_competitor(c,conn,teamname,competitorname,age,height,weight):
