@@ -104,8 +104,17 @@ def index():
 def stream():
    return render_template("stream.html")
 
+@login_required
+@app.route('/new_event', methods=['GET', 'POST'])
+def create_event():
+    return render_template("new_event.html")
+
 @app.route('/calendar')
 def calendar():
+   conn = sqlite3.connect(database_name)
+   c = conn.cursor()
+
+
    return render_template("calendar.html")
 
 @login_required
@@ -128,8 +137,8 @@ def team_stats():
            if unciphered_text == password_input:  # successfully logged in
                conn = sqlite3.connect(database_name)
                c = conn.cursor()
-               competitors = get_competitors_of_team(c,conn,teamname)
-               return render_template("team_stats.html", logged_in = True, competitors = competitors)
+
+               return render_template("team_stats.html", logged_in = True, competitors = get_competitors_of_team(c,conn,teamname))
            else:
                error = 'Invalid Credentials. Please try again.' 
        except cryptography.fernet.InvalidToken:
@@ -373,6 +382,7 @@ def create_all_tables():
     create_table_for_users(c,conn)
     create_teams_coach_table(c,conn)
     create_competitors_table(c,conn)
+    create_events_table(c,conn)
 
 def create_table_for_users(c,conn):
     """creates the table for the teams
@@ -445,6 +455,26 @@ def create_competitors_table(c,conn):
         weight text)""")
     conn.commit()
 
+def create_events_table(c,conn):
+    """creates the table for the events
+
+    Args:
+        c: the cursor
+        conn: the connection to the db
+        
+    """
+
+    c.execute("""
+        CREATE TABLE Events(
+        id INTEGER PRIMARY KEY,
+        eventname text,
+        eventdescription text,
+        hostname text,
+        eventdate NUMERIC,
+        location text)""")
+    conn.commit()
+    print "Created evenets table.."
+
 
 """ 
 ------------------------------------------------------------------------
@@ -472,8 +502,29 @@ def get_all_competitors(c,conn):
             break
         else:
             competitors.append(res[0])
-            stringRes = ''.join(res)
     return competitors
+
+def get_all_events(c,conn):
+    """  gets a list of all the events
+
+    Args:
+        c: the cursor
+        conn: the connection to the db
+    
+    Returns:
+        tuple with the names of the events
+
+    """
+    c.execute("Select eventname from Events")
+    events = []
+
+    while True:
+        res = c.fetchone()
+        if res is None:
+            break
+        else:
+            events.append(res[0])
+    return events
 
 def new_competitor(c,conn,teamname,competitorname,age,height,weight):
     """ Creates a new competitor and adds him to the database. 
@@ -602,10 +653,10 @@ def get_competitors_of_team(c,conn,teamname):
     Args:
         c: the cursor
         conn: the connection to the db
-        coach: the name of the coach
+        teamname: the name of the team
     
     Returns:
-        a list of all the teams a coach has
+        a list of all the competitors a team has
 
     """
     c.execute("Select competitorname from Competitors where teamname = '{}'".format(teamname))

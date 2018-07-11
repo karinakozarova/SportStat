@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Team Stats{% endblock %}
+{% block body %}
+<br>
+<div class="jumbotron">
+      <h2> <i class="glyphicon glyphicon-globe"></i>  Create Event </h2>
+      <div class="container-fluid">
+        {% if error %}
+          <p class="error"><strong>Error:</strong> {{ error }}
+        {% endif %}
+
+
+        <form action="" method="post">
+            <label for="eventname">Event Name: </label>
+            <input class="form-control" name="eventName" placeholder="Event name" type="text" /> <br>
+
+            <label for="eventdescription">Event Description: </label>
+            <textarea name="message" id="message" class="form-control" placeholder=" Enter the evenet description here..."> </textarea>
+
+            <label for="teamname">Teamname: </label>
+            <input type="teamname" class="form-control" placeholder="teamname" name="teamname" value="{{
+              request.form.teamname}}">
+            <br> 
+
+            <label for="eventdate">Event date: </label>
+            <input type="date" name="date" class="form-control" > 
+            <br>
+          <button type="submit" class="btn btn-success btn-block" value="Login">Login</button>
+        </form>
+
+      </div>
+</div>
+{% endblock %}
