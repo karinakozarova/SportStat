@@ -854,6 +854,10 @@ def coach_or_competitor(username):
         print "This user is a competitor"
         return render_template("competitor.html", loggedin = True) 
 
+def clean_database():
+    """creates db from scratch"""
+    drop_all_tables()
+    create_all_tables()
 def signed_in(role,name,email):
     """signs in user
 
