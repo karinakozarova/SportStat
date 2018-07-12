@@ -35,19 +35,8 @@ from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
                       GLOBAL VARIABLES SECTION
 ------------------------------------------------------------------------
 """
-is_logged_in = False
-key = b'pRmgMa8T0INjEAfksaq2aafzoZXEuwKI7wDe4c1F8AY='
-cipher_suite = Fernet(key)
 
-login_manager = LoginManager()
-login_manager.init_app(app)
-
-database_name = "test.db"
-
-
-@login_manager.user_loader
-def load_user(user_id):
-    return None
+DB_NAME = "test.db"
 
 
 """
@@ -110,25 +99,6 @@ class CompetitorsForm(Form):
 
 """
 ------------------------------------------------------------------------
-                            CLASSES SECTION
-------------------------------------------------------------------------
-"""
-
-
-class User:
-    is_authenticated = False
-    is_active = True
-    is_anonymous = True
-
-    def get_id(self):
-        return str(1).encode("utf-8").decode("utf-8")
-
-    def __init__(self):
-        pass
-
-
-"""
-------------------------------------------------------------------------
                             ROUTES SECTION
 ------------------------------------------------------------------------
 """
@@ -162,7 +132,7 @@ def create_event():
         try:
             unciphered_text = decipher_text(database_password)
             if unciphered_text == password_input:  # successfully logged in
-                conn = sqlite3.connect(database_name)
+                conn = sqlite3.connect(DB_NAME)
                 c = conn.cursor()
                 create_event(
                     c,
@@ -185,7 +155,7 @@ def create_event():
 
 @app.route('/calendar')
 def calendar():
-    conn = sqlite3.connect(database_name)
+    conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
     events = get_all_events(c, conn)
     return render_template("calendar.html", events=events)
@@ -210,7 +180,7 @@ def team_stats():
         try:
             unciphered_text = decipher_text(database_password)
             if unciphered_text == password_input:  # successfully logged in
-                conn = sqlite3.connect(database_name)
+                conn = sqlite3.connect(DB_NAME)
                 c = conn.cursor()
 
                 return render_template(
@@ -249,7 +219,7 @@ def coach_teams():
         try:
             unciphered_text = decipher_text(database_password)
             if unciphered_text == password_input:  # successfully logged in
-                conn = sqlite3.connect(database_name)
+                conn = sqlite3.connect(DB_NAME)
                 c = conn.cursor()
                 teams = get_teams_of_coach(c, conn, username)
                 return render_template(
@@ -269,7 +239,7 @@ def coach_teams():
 @app.route('/change_password', methods=['GET', 'POST'])
 def authentication():
     if request.method == 'POST':
-        conn = sqlite3.connect(database_name)
+        conn = sqlite3.connect(DB_NAME)
         c = conn.cursor()
 
         name = request.form['username']
@@ -289,7 +259,7 @@ def authentication():
 @login_required
 @app.route('/competitors')
 def competitor():
-    conn = sqlite3.connect(database_name)
+    conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
     competitors = get_all_competitors(c, conn)
     return render_template('competitor.html', competitors=competitors)
@@ -308,7 +278,7 @@ def insert_info(name="Guest", email="none"):
         weight = request.form['weight']
         teamname = request.form['teamname']
 
-        conn = sqlite3.connect(database_name)
+        conn = sqlite3.connect(DB_NAME)
         c = conn.cursor()
 
         database_password = get_password(username)
@@ -338,7 +308,7 @@ def insert_info(name="Guest", email="none"):
 
 @app.route('/teams')
 def test_route():
-    conn = sqlite3.connect(database_name)
+    conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
     c.execute("select team_name from Teams")
 
@@ -367,7 +337,7 @@ def register_team():
     form = TeamsForm(request.form)
     print form.errors
     if request.method == 'POST':
-        conn = sqlite3.connect(database_name)
+        conn = sqlite3.connect(DB_NAME)
         c = conn.cursor()
 
         name = request.form['name']
@@ -413,7 +383,7 @@ def login():
         if unciphered_text == password_input:
             user = User()
             login_user(user)
-            conn = sqlite3.connect(database_name)
+            conn = sqlite3.connect(DB_NAME)
             c = conn.cursor()
             # return coach_or_competitor(username)
             role = get_role(c, conn, username)
@@ -430,7 +400,7 @@ def register():
     print form.errors
 
     if request.method == 'POST':
-        conn = sqlite3.connect(database_name)
+        conn = sqlite3.connect(DB_NAME)
         c = conn.cursor()
 
         name = request.form['name']
@@ -474,7 +444,7 @@ def page_not_found(e):
 
 def drop_all_tables():
     """ drops all database tables"""
-    conn = sqlite3.connect(database_name)
+    conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
     c.execute("DROP TABLE Users")
     c.execute("DROP TABLE Teams")
@@ -485,7 +455,7 @@ def drop_all_tables():
 
 def create_all_tables():
     """ creates all database tables"""
-    conn = sqlite3.connect(database_name)
+    conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
     create_table_for_teams(c, conn)
     create_table_for_users(c, conn)
@@ -592,14 +562,14 @@ def create_events_table(c, conn):
 """
 
 
-def create_event(c, conn, name, description, host, location):
+def create_event(c, conn, name, descr, host, location):
     """  gets a list of all the competitors
 
     Args:
         c: the cursor
         conn: the connection to the db
         name: event name
-        description: description of the event
+        descr: description of the event
         host: nme of the event host(coach)
         location: the address of the event
 
@@ -608,8 +578,8 @@ def create_event(c, conn, name, description, host, location):
 
     """
 
-    c.execute("INSERT INTO {} VALUES(?, ?, ?, ?)" .format(
-        "Events(eventname,eventdescription,hostname,location)"), (name, description, host, location))
+    c.execute("INSERT INTO {} VALUES(?, ?, ?, ?)".format(
+        "Events(eventname,eventdescription,hostname,location)"), (name, descr, host, location))
 
     conn.commit()
     print "successfully created event"
@@ -744,7 +714,7 @@ def get_password(username):
         the password stored in the database
 
     """
-    conn = sqlite3.connect(database_name)
+    conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
     c.execute("Select password from Users where name = '{}'".format(username))
     res = str(c.fetchone())
@@ -761,7 +731,7 @@ def is_coach(username):
         True if is a coach, False otherwise
 
     """
-    conn = sqlite3.connect(database_name)
+    conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
     c.execute("Select role from Users where name = '{}'".format(username))
     res = str(c.fetchone())
@@ -828,7 +798,7 @@ def change_password(username, newpassword):
         username: the username that should be checked
 
     """
-    conn = sqlite3.connect(database_name)
+    conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
     password = cipher_text(newpassword)
     c.execute(
