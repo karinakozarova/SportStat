@@ -10,7 +10,7 @@ from wtforms import Form, TextField, validators
 import sqlite3
 import re
 
-from flask_login import login_required, login_user
+from flask_login import login_required 
 
 # for passwords encryption
 """
@@ -132,7 +132,7 @@ def create_event():
             if unciphered_text == password_input:  # successfully logged in
                 conn = sqlite3.connect(DB_NAME)
                 c = conn.cursor()
-                create_event(
+                create_new_event(
                     c,
                     conn,
                     eventname,
@@ -264,7 +264,7 @@ def competitor():
 
 
 @app.route('/competitors_information', methods=['GET', 'POST'])
-def insert_info(name="Guest", email="none"):
+def insert_info():
 
     error = None
     success = None
@@ -353,7 +353,7 @@ def register_team():
                 teamname=name,
                 coach=coach,
                 country=country)
-        elif is_coach(coach) == False:
+        elif is_coach(coach) is not True:
             flash('Error: Not a valid coach.')
         else:
             flash('Error: All the form fields are required.')
@@ -379,8 +379,6 @@ def login():
                 'login.html',
                 error='Not the right password for that username')
         if unciphered_text == password_input:
-            user = User()
-            login_user(user)
             conn = sqlite3.connect(DB_NAME)
             c = conn.cursor()
             # return coach_or_competitor(username)
@@ -414,7 +412,7 @@ def register():
             conn.commit()
 
             return signed_in(role, name, email)
-        elif is_valid_email == False:
+        elif is_valid_email is not True:
             flash('Error: That is not a valid email address')
         else:
             flash('Error: All the form fields are required. Mail must be at least 6 chars and the password - at least 3')
@@ -429,7 +427,8 @@ def register():
 
 
 @app.errorhandler(404)
-def page_not_found(e):
+def page_not_found(error_to_handle):
+    print error_to_handle
     return render_template('404.html'), 404
 
 
@@ -560,7 +559,7 @@ def create_events_table(c, conn):
 """
 
 
-def create_event(c, conn, name, descr, host, location):
+def create_new_event(c, conn, name, descr, host, location):
     """  gets a list of all the competitors
 
     Args:
@@ -759,7 +758,7 @@ def get_teams_of_coach(c, conn, coach):
         if res is None:
             break
         else:
-            res[0] + ",coached by " + coach
+            # append_this = res[0] + ",coached by " + coach
             teams.append(res[0])
     return teams
 
@@ -833,17 +832,17 @@ def matching_username_and_password(username, password):
 """
 
 
-def clean_up_database_str(str):
+def clean_up_database_str(string_To_transform):
     """Removes unneded chars from the string, retrieved from the database
 
     Args:
-        str: the string that should be parsed
+        string_To_transform: the string that should be parsed
 
     Returns:
         The fixed string
 
     """
-    return str[3:-3]
+    return string_To_transform[3:-3]
 
 
 def is_valid_email(email):
@@ -856,7 +855,7 @@ def is_valid_email(email):
         True if it's a valid email, False otherwise
 
     """
-    regex = '^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,4})$'
+    regex = r'^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,4})$'
     is_valid_email = re.match(regex, email)
     if is_valid_email is None:
         return False
@@ -873,8 +872,8 @@ def cipher_text(text_to_cipher):
         the ciphered text
 
     """
-    f = get_fernet_key()
-    return f.encrypt(string_to_bytes(text_to_cipher))
+    ferneted = get_fernet_key()
+    return ferneted.encrypt(string_to_bytes(text_to_cipher))
 
 
 def decipher_text(text_to_decipher):
@@ -887,8 +886,8 @@ def decipher_text(text_to_decipher):
         the unciphered text
 
     """
-    f = get_fernet_key()
-    return f.decrypt(string_to_bytes(text_to_decipher))
+    ferneted = get_fernet_key()
+    return ferneted.decrypt(string_to_bytes(text_to_decipher))
 
 
 def get_fernet_key():

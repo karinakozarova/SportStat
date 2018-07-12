@@ -1,0 +1,205 @@
+************* Module app.views
+C: 13, 0: Trailing whitespace (trailing-whitespace)
+C:418, 0: Line too long (121/100) (line-too-long)
+C:657, 0: Line too long (119/100) (line-too-long)
+W: 20,-1: String statement has no effect (pointless-string-statement)
+W: 35,-1: String statement has no effect (pointless-string-statement)
+C: 47, 0: Missing class docstring (missing-docstring)
+R: 47, 0: Too few public methods (1/2) (too-few-public-methods)
+C: 65, 0: Missing class docstring (missing-docstring)
+R: 65, 0: Too few public methods (1/2) (too-few-public-methods)
+C: 71, 0: Missing class docstring (missing-docstring)
+R: 71, 0: Too few public methods (1/2) (too-few-public-methods)
+W:102,-1: String statement has no effect (pointless-string-statement)
+C:107, 0: Missing function docstring (missing-docstring)
+C:112, 0: Missing function docstring (missing-docstring)
+C:118, 0: Missing function docstring (missing-docstring)
+C:134,16: Invalid variable name "c" (invalid-name)
+C:155, 0: Missing function docstring (missing-docstring)
+C:157, 4: Invalid variable name "c" (invalid-name)
+C:164, 0: Missing function docstring (missing-docstring)
+C:170, 0: Missing function docstring (missing-docstring)
+C:182,16: Invalid variable name "c" (invalid-name)
+C:203, 0: Missing function docstring (missing-docstring)
+C:209, 0: Missing function docstring (missing-docstring)
+C:221,16: Invalid variable name "c" (invalid-name)
+C:238, 0: Missing function docstring (missing-docstring)
+C:259, 0: Missing function docstring (missing-docstring)
+C:261, 4: Invalid variable name "c" (invalid-name)
+W:291,12: Redefining name 'competitor' from outer scope (line 259) (redefined-outer-name)
+C:267, 0: Missing function docstring (missing-docstring)
+C:280, 8: Invalid variable name "c" (invalid-name)
+C:308, 0: Missing function docstring (missing-docstring)
+C:310, 4: Invalid variable name "c" (invalid-name)
+C:334, 0: Missing function docstring (missing-docstring)
+C:339, 8: Invalid variable name "c" (invalid-name)
+C:364, 0: Missing function docstring (missing-docstring)
+C:383,12: Invalid variable name "c" (invalid-name)
+C:394, 0: Missing function docstring (missing-docstring)
+C:400, 8: Invalid variable name "c" (invalid-name)
+W:426,-1: String statement has no effect (pointless-string-statement)
+C:430, 0: Missing function docstring (missing-docstring)
+W:439,-1: String statement has no effect (pointless-string-statement)
+C:445, 4: Invalid variable name "c" (invalid-name)
+C:456, 4: Invalid variable name "c" (invalid-name)
+C:464, 0: Invalid argument name "c" (invalid-name)
+C:482, 0: Invalid argument name "c" (invalid-name)
+C:498, 0: Invalid argument name "c" (invalid-name)
+C:515, 0: Invalid argument name "c" (invalid-name)
+C:535, 0: Invalid argument name "c" (invalid-name)
+W:559,-1: String statement has no effect (pointless-string-statement)
+C:562, 0: Invalid argument name "c" (invalid-name)
+R:562, 0: Too many arguments (6/5) (too-many-arguments)
+C:585, 0: Invalid argument name "c" (invalid-name)
+W:585,27: Unused argument 'conn' (unused-argument)
+C:608, 0: Invalid argument name "c" (invalid-name)
+W:608,22: Unused argument 'conn' (unused-argument)
+C:633, 0: Invalid argument name "c" (invalid-name)
+R:633, 0: Too many arguments (7/5) (too-many-arguments)
+C:668, 0: Invalid argument name "c" (invalid-name)
+W:668,16: Unused argument 'conn' (unused-argument)
+C:686, 0: Invalid argument name "c" (invalid-name)
+W:686,31: Unused argument 'conn' (unused-argument)
+C:715, 4: Invalid variable name "c" (invalid-name)
+C:732, 4: Invalid variable name "c" (invalid-name)
+C:741, 0: Invalid argument name "c" (invalid-name)
+W:741,26: Unused argument 'conn' (unused-argument)
+C:766, 0: Invalid argument name "c" (invalid-name)
+W:766,31: Unused argument 'conn' (unused-argument)
+C:799, 4: Invalid variable name "c" (invalid-name)
+W:832,-1: String statement has no effect (pointless-string-statement)
+C:835, 0: Invalid argument name "string_To_transform" (invalid-name)
+W:859, 4: Redefining name 'is_valid_email' from outer scope (line 848) (redefined-outer-name)
+C:  9, 0: external import "from wtforms import Form, TextField, validators" comes before "from app import app" (wrong-import-order)
+C: 10, 0: standard import "import sqlite3" comes before "from flask import flash, redirect, render_template, request" (wrong-import-order)
+C: 11, 0: standard import "import re" comes before "from flask import flash, redirect, render_template, request" (wrong-import-order)
+C: 13, 0: external import "from flask_login import login_required" comes before "from app import app" (wrong-import-order)
+C: 21, 0: standard import "import base64" comes before "from flask import flash, redirect, render_template, request" (wrong-import-order)
+C: 22, 0: external import "import cryptography" comes before "from app import app" (wrong-import-order)
+C: 23, 0: external import "from cryptography.fernet import Fernet" comes before "from app import app" (wrong-import-order)
+C: 24, 0: external import "from cryptography.hazmat.backends import default_backend" comes before "from app import app" (wrong-import-order)
+C: 25, 0: external import "from cryptography.hazmat.primitives import hashes" comes before "from app import app" (wrong-import-order)
+C: 26, 0: external import "from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC" comes before "from app import app" (wrong-import-order)
+
+
+Report
+======
+385 statements analysed.
+
+Statistics by type
+------------------
+
++---------+-------+-----------+-----------+------------+---------+
+|type     |number |old number |difference |%documented |%badname |
++=========+=======+===========+===========+============+=========+
+|module   |1      |1          |=          |100.00      |0.00     |
++---------+-------+-----------+-----------+------------+---------+
+|class    |3      |3          |=          |0.00        |0.00     |
++---------+-------+-----------+-----------+------------+---------+
+|method   |0      |0          |=          |0           |0        |
++---------+-------+-----------+-----------+------------+---------+
+|function |44     |44         |=          |63.64       |0.00     |
++---------+-------+-----------+-----------+------------+---------+
+
+
+
+External dependencies
+---------------------
+::
+
+    app (app.views)
+    cryptography (app.views)
+      \-fernet (app.views)
+      \-hazmat 
+        \-backends (app.views)
+        \-primitives 
+          \-hashes (app.views)
+          \-kdf 
+            \-pbkdf2 (app.views)
+    flask (app.views)
+    flask_login (app.views)
+    wtforms (app.views)
+      \-validators (app.views)
+
+
+
+Raw metrics
+-----------
+
++----------+-------+------+---------+-----------+
+|type      |number |%     |previous |difference |
++==========+=======+======+=========+===========+
+|code      |545    |55.73 |545      |=          |
++----------+-------+------+---------+-----------+
+|docstring |281    |28.73 |279      |+2.00      |
++----------+-------+------+---------+-----------+
+|comment   |5      |0.51  |5        |=          |
++----------+-------+------+---------+-----------+
+|empty     |147    |15.03 |147      |=          |
++----------+-------+------+---------+-----------+
+
+
+
+Duplication
+-----------
+
++-------------------------+------+---------+-----------+
+|                         |now   |previous |difference |
++=========================+======+=========+===========+
+|nb duplicated lines      |0     |0        |=          |
++-------------------------+------+---------+-----------+
+|percent duplicated lines |0.000 |0.000    |=          |
++-------------------------+------+---------+-----------+
+
+
+
+Messages by category
+--------------------
+
++-----------+-------+---------+-----------+
+|type       |number |previous |difference |
++===========+=======+=========+===========+
+|convention |61     |61       |=          |
++-----------+-------+---------+-----------+
+|refactor   |5      |5        |=          |
++-----------+-------+---------+-----------+
+|warning    |15     |12       |+3.00      |
++-----------+-------+---------+-----------+
+|error      |0      |3        |-3.00      |
++-----------+-------+---------+-----------+
+
+
+
+Messages
+--------
+
++---------------------------+------------+
+|message id                 |occurrences |
++===========================+============+
+|invalid-name               |29          |
++---------------------------+------------+
+|missing-docstring          |19          |
++---------------------------+------------+
+|wrong-import-order         |10          |
++---------------------------+------------+
+|pointless-string-statement |7           |
++---------------------------+------------+
+|unused-argument            |6           |
++---------------------------+------------+
+|too-few-public-methods     |3           |
++---------------------------+------------+
+|too-many-arguments         |2           |
++---------------------------+------------+
+|redefined-outer-name       |2           |
++---------------------------+------------+
+|line-too-long              |2           |
++---------------------------+------------+
+|trailing-whitespace        |1           |
++---------------------------+------------+
+
+
+
+Global evaluation
+-----------------
+Your code has been rated at 7.90/10 (previous run: 7.58/10, +0.31)
+
