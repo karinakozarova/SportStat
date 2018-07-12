@@ -1,62 +1,13 @@
 ************* Module app.views
-C:  7, 0: Trailing whitespace (trailing-whitespace)
-C:379, 0: Line too long (121/100) (line-too-long)
-C:595, 0: Line too long (119/100) (line-too-long)
-C:  1, 0: Missing module docstring (missing-docstring)
-C: 22, 0: Missing class docstring (missing-docstring)
-R: 22, 0: Too few public methods (1/2) (too-few-public-methods)
-C: 40, 0: Missing class docstring (missing-docstring)
+R: 21, 0: Too few public methods (1/2) (too-few-public-methods)
 R: 40, 0: Too few public methods (1/2) (too-few-public-methods)
-C: 46, 0: Missing class docstring (missing-docstring)
-R: 46, 0: Too few public methods (1/2) (too-few-public-methods)
-C: 75, 0: Missing function docstring (missing-docstring)
-C: 80, 0: Missing function docstring (missing-docstring)
-C: 86, 0: Missing function docstring (missing-docstring)
-C:119, 0: Missing function docstring (missing-docstring)
-C:121, 4: Invalid variable name "c" (invalid-name)
-C:128, 0: Missing function docstring (missing-docstring)
-C:134, 0: Missing function docstring (missing-docstring)
-C:146,16: Invalid variable name "c" (invalid-name)
-C:166, 0: Missing function docstring (missing-docstring)
-C:172, 0: Missing function docstring (missing-docstring)
-C:184,16: Invalid variable name "c" (invalid-name)
-C:201, 0: Missing function docstring (missing-docstring)
-C:222, 0: Missing function docstring (missing-docstring)
-C:224, 4: Invalid variable name "c" (invalid-name)
-W:252,12: Redefining name 'competitor' from outer scope (line 222) (redefined-outer-name)
-C:230, 0: Missing function docstring (missing-docstring)
-C:269, 0: Missing function docstring (missing-docstring)
-C:271, 4: Invalid variable name "c" (invalid-name)
-C:295, 0: Missing function docstring (missing-docstring)
-C:300, 8: Invalid variable name "c" (invalid-name)
-C:325, 0: Missing function docstring (missing-docstring)
-C:344,12: Invalid variable name "c" (invalid-name)
-C:355, 0: Missing function docstring (missing-docstring)
-C:361, 8: Invalid variable name "c" (invalid-name)
-C:384, 0: Missing function docstring (missing-docstring)
-C:392, 4: Invalid variable name "c" (invalid-name)
-C:403, 4: Invalid variable name "c" (invalid-name)
-C:411, 0: Invalid argument name "c" (invalid-name)
-C:429, 0: Invalid argument name "c" (invalid-name)
-C:445, 0: Invalid argument name "c" (invalid-name)
-C:462, 0: Invalid argument name "c" (invalid-name)
-C:482, 0: Invalid argument name "c" (invalid-name)
-C:525, 0: Invalid argument name "c" (invalid-name)
-C:547, 0: Invalid argument name "c" (invalid-name)
-C:606, 0: Invalid argument name "c" (invalid-name)
-C:623, 0: Invalid argument name "c" (invalid-name)
-C:652, 4: Invalid variable name "c" (invalid-name)
-C:669, 4: Invalid variable name "c" (invalid-name)
-C:678, 0: Invalid argument name "c" (invalid-name)
-C:702, 0: Invalid argument name "c" (invalid-name)
-C:735, 4: Invalid variable name "c" (invalid-name)
-C:764, 0: Invalid argument name "string_To_transform" (invalid-name)
+R: 47, 0: Too few public methods (1/2) (too-few-public-methods)
 C: 10, 0: Imports from package cryptography are not grouped (ungrouped-imports)
 
 
 Report
 ======
-376 statements analysed.
+365 statements analysed.
 
 Statistics by type
 ------------------
@@ -64,13 +15,13 @@ Statistics by type
 +---------+-------+-----------+-----------+------------+---------+
 |type     |number |old number |difference |%documented |%badname |
 +=========+=======+===========+===========+============+=========+
-|module   |1      |1          |=          |0.00        |0.00     |
+|module   |1      |1          |=          |100.00      |0.00     |
 +---------+-------+-----------+-----------+------------+---------+
-|class    |3      |3          |=          |0.00        |0.00     |
+|class    |3      |3          |=          |100.00      |0.00     |
 +---------+-------+-----------+-----------+------------+---------+
 |method   |0      |0          |=          |0           |0        |
 +---------+-------+-----------+-----------+------------+---------+
-|function |44     |44         |=          |63.64       |0.00     |
+|function |44     |44         |=          |100.00      |0.00     |
 +---------+-------+-----------+-----------+------------+---------+
 
 
@@ -101,13 +52,13 @@ Raw metrics
 +----------+-------+------+---------+-----------+
 |type      |number |%     |previous |difference |
 +==========+=======+======+=========+===========+
-|code      |516    |56.95 |521      |-5.00      |
+|code      |504    |55.57 |500      |+4.00      |
 +----------+-------+------+---------+-----------+
-|docstring |253    |27.92 |253      |=          |
+|docstring |273    |30.10 |273      |=          |
 +----------+-------+------+---------+-----------+
-|comment   |4      |0.44  |4        |=          |
+|comment   |3      |0.33  |3        |=          |
 +----------+-------+------+---------+-----------+
-|empty     |133    |14.68 |135      |-2.00      |
+|empty     |127    |14.00 |127      |=          |
 +----------+-------+------+---------+-----------+
 
 
@@ -131,13 +82,13 @@ Messages by category
 +-----------+-------+---------+-----------+
 |type       |number |previous |difference |
 +===========+=======+=========+===========+
-|convention |49     |49       |=          |
+|convention |1      |0        |+1.00      |
 +-----------+-------+---------+-----------+
 |refactor   |3      |3        |=          |
 +-----------+-------+---------+-----------+
-|warning    |1      |2        |-1.00      |
+|warning    |0      |0        |=          |
 +-----------+-------+---------+-----------+
-|error      |0      |0        |=          |
+|error      |0      |4        |-4.00      |
 +-----------+-------+---------+-----------+
 
 
@@ -148,24 +99,14 @@ Messages
 +-----------------------+------------+
 |message id             |occurrences |
 +=======================+============+
-|invalid-name           |25          |
-+-----------------------+------------+
-|missing-docstring      |20          |
-+-----------------------+------------+
 |too-few-public-methods |3           |
 +-----------------------+------------+
-|line-too-long          |2           |
-+-----------------------+------------+
 |ungrouped-imports      |1           |
-+-----------------------+------------+
-|trailing-whitespace    |1           |
-+-----------------------+------------+
-|redefined-outer-name   |1           |
 +-----------------------+------------+
 
 
 
 Global evaluation
 -----------------
-Your code has been rated at 8.59/10 (previous run: 8.57/10, +0.02)
+Your code has been rated at 9.89/10 (previous run: 9.36/10, +0.53)
 

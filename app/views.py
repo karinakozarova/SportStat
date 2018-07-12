@@ -1,18 +1,17 @@
+""" sportstat """
+
 import sqlite3
 import re
 import base64
 import cryptography
 from flask import flash, redirect, render_template, request
 from wtforms import Form, TextField, validators
-from flask_login import login_required 
-
-
+from flask_login import login_required
 from cryptography.fernet import Fernet
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from app import app
-
 
 # logging.basicConfig(filename='app_log.log', level=logging.DEBUG,format='%(asctime)s:%(message)s')
 
@@ -20,6 +19,7 @@ from app import app
 DB_NAME = "test.db"
 
 class RegistrationForm(Form):
+    """ form for registration of user """
     name = TextField('Name:', validators=[validators.required()])
     email = TextField(
         'Email:',
@@ -38,12 +38,14 @@ class RegistrationForm(Form):
 
 
 class TeamsForm(Form):
+    """ form for registration of team """
     name = TextField('Name:', validators=[validators.required()])
     coach = TextField('Coach:', validators=[validators.required()])
     country = TextField('Country:', validators=[validators.required()])
 
 
 class CompetitorsForm(Form):
+    """ form for registration of team """
     name = TextField('Name:', validators=[validators.required()])
     email = TextField('Email:', validators=[validators.required()])
     age = TextField(
@@ -73,17 +75,20 @@ class CompetitorsForm(Form):
 @app.route('/')
 @app.route('/about')
 def index():
+    """ page for basic info """
     return render_template("index.html")
 
 
 @app.route('/stream')
 def stream():
+    """ page for streaming """
     return render_template("stream.html")
 
 
 @login_required
 @app.route('/new_event', methods=['GET', 'POST'])
 def create_event():
+    """page for creating event"""
     if request.method == 'POST':
         username = request.form['username']
         password_input = request.form['password']
@@ -117,39 +122,39 @@ def create_event():
 
 @app.route('/calendar')
 def calendar():
-    conn = sqlite3.connect(DB_NAME)
-    c = conn.cursor()
-    events = get_all_events(c)
+    """page for all events"""
+    events = get_all_events(sqlite3.connect(DB_NAME).cursor())
     return render_template("calendar.html", events=events)
 
 
 @login_required
 @app.route('/pay')
 def payment():
+    """page for payment"""
     return render_template("pay.html")
 
 
 @login_required
 @app.route('/team_stats', methods=['GET', 'POST'])
 def team_stats():
+    """ page for stats of team """
     if request.method == 'POST':
         username = request.form['username']
         password_input = request.form['password']
         teamname = request.form['teamname']
 
         database_password = get_password(username)
-        unciphered_text = "1"
+        unciphered_text = None
         try:
             unciphered_text = decipher_text(database_password)
             if unciphered_text == password_input:  # successfully logged in
                 conn = sqlite3.connect(DB_NAME)
-                c = conn.cursor()
 
                 return render_template(
                     "team_stats.html",
                     logged_in=True,
                     competitors=get_competitors_of_team(
-                        c,
+                        conn.cursor(),
                         teamname))
             else:
                 pass
@@ -164,12 +169,14 @@ def team_stats():
 
 @app.route('/forgotten_password')
 def render_underconstruction():
+    """render html for when page is under construction"""
     return render_template('under_development.html')
 
 
 @app.route('/')
 @app.route('/coach_teams', methods=['GET', 'POST'])
 def coach_teams():
+    """renders all teams of certain coach"""
     if request.method == 'POST':
         username = request.form['username']
         password_input = request.form['password']
@@ -181,8 +188,7 @@ def coach_teams():
             unciphered_text = decipher_text(database_password)
             if unciphered_text == password_input:  # successfully logged in
                 conn = sqlite3.connect(DB_NAME)
-                c = conn.cursor()
-                teams = get_teams_of_coach(c, username)
+                teams = get_teams_of_coach(conn.cursor(), username)
                 return render_template(
                     "coach_teams.html", logged_in=True, teams=teams)
             else:
@@ -199,10 +205,8 @@ def coach_teams():
 @login_required
 @app.route('/change_password', methods=['GET', 'POST'])
 def authentication():
+    """change psswd"""
     if request.method == 'POST':
-        conn = sqlite3.connect(DB_NAME)
-        conn.cursor()
-
         name = request.form['username']
         oldpassword = request.form['oldpassword']
         password = request.form['password']
@@ -220,15 +224,14 @@ def authentication():
 @login_required
 @app.route('/competitors')
 def competitor():
-    conn = sqlite3.connect(DB_NAME)
-    c = conn.cursor()
-    competitors = get_all_competitors(c)
+    """get all competitors"""
+    competitors = get_all_competitors(sqlite3.connect(DB_NAME).conn.cursor())
     return render_template('competitor.html', competitors=competitors)
 
 
 @app.route('/competitors_information', methods=['GET', 'POST'])
 def insert_info():
-
+    """insert competitors information"""
     error = None
     success = None
     if request.method == 'POST':
@@ -249,13 +252,7 @@ def insert_info():
         if unciphered_text == password_input:
             # that's the right password
             print "Right credentials"
-            competitor = new_competitor(
-                teamname, username, age, height, weight)
-            if competitor:
-                success = "Successfully registered this competitor!"
-            else:
-                success = "Successfully updated this competitor!"
-
+            new_competitor(teamname, username, age, height, weight)
         else:
             error = 'Invalid Credentials. Please try again.'
 
@@ -266,17 +263,18 @@ def insert_info():
 
 
 @app.route('/teams')
-def test_route():
+def all_teams():
+    """ print all teams"""
     conn = sqlite3.connect(DB_NAME)
-    c = conn.cursor()
-    c.execute("select team_name from Teams")
+    cursor = conn.cursor()
+    cursor.execute("select team_name from Teams")
 
     teams = []
     names = []
     countries = []
 
     while True:
-        res = c.fetchone()
+        res = cursor.fetchone()
         if res is None:
             break
         else:
@@ -293,20 +291,21 @@ def test_route():
 @login_required
 @app.route('/register_team', methods=['GET', 'POST'])
 def register_team():
+    """ create a team"""
     form = TeamsForm(request.form)
     print form.errors
     if request.method == 'POST':
         conn = sqlite3.connect(DB_NAME)
-        c = conn.cursor()
+        cursor = conn.cursor()
 
         name = request.form['name']
         country = request.form['country']
         coach = request.form['coach']
 
         if form.validate() and is_coach(coach):
-            c.execute("INSERT INTO {} VALUES(?, ?)".format(
+            cursor.execute("INSERT INTO {} VALUES(?, ?)".format(
                 "Teams(team_name,country)"), (name, country))
-            c.execute("INSERT INTO {} VALUES(?, ?)".format(
+            cursor.execute("INSERT INTO {} VALUES(?, ?)".format(
                 "TeamsCoaches(team_name,coach_name)"), (name, coach))
             conn.commit()
             return render_template(
@@ -323,6 +322,7 @@ def register_team():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    """login"""
     error = None
     if request.method == 'POST':
         username = request.form['username']
@@ -341,10 +341,9 @@ def login():
                 error='Not the right password for that username')
         if unciphered_text == password_input:
             conn = sqlite3.connect(DB_NAME)
-            c = conn.cursor()
-            # return coach_or_competitor(username)
-            role = get_role(c, username)
-            email = get_email_from_username(c, username)
+            cursor = conn.cursor()
+            role = get_role(cursor, username)
+            email = get_email_from_username(cursor, username)
             return signed_in(role, username, email)
         else:
             error = 'Invalid Credentials. Please try again.'
@@ -353,13 +352,11 @@ def login():
 
 @app.route("/register", methods=['GET', 'POST'])
 def register():
+    """register"""
     form = RegistrationForm(request.form)
     print form.errors
 
     if request.method == 'POST':
-        conn = sqlite3.connect(DB_NAME)
-        c = conn.cursor()
-
         name = request.form['name']
         password = request.form['password']
         email = request.form['email']
@@ -368,7 +365,8 @@ def register():
         ciphered_password = cipher_text(password)
 
         if form.validate() and is_valid_email(email):
-            c.execute("INSERT INTO {} VALUES(?, ?, ?, ?)".format(
+            conn = sqlite3.connect(DB_NAME)
+            conn.cursor().execute("INSERT INTO {} VALUES(?, ?, ?, ?)".format(
                 "Users(name,email,password,role)"), (name, email, ciphered_password, role))
             conn.commit()
 
@@ -376,12 +374,14 @@ def register():
         elif is_valid_email is not True:
             flash('Error: That is not a valid email address')
         else:
-            flash('Error: All the form fields are required. Mail must be at least 6 chars and the password - at least 3')
+            error_mssg = 'Error: All the form fields are required.'
+            flash(error_mssg)
     return render_template('register.html', form=form)
 
 
 @app.errorhandler(404)
 def page_not_found(error_to_handle):
+    """404"""
     print error_to_handle
     return render_template('404.html'), 404
 
@@ -389,34 +389,34 @@ def page_not_found(error_to_handle):
 def drop_all_tables():
     """ drops all database tables"""
     conn = sqlite3.connect(DB_NAME)
-    c = conn.cursor()
-    c.execute("DROP TABLE Users")
-    c.execute("DROP TABLE Teams")
-    c.execute("DROP TABLE TeamsCoaches")
-    c.execute("DROP TABLE Competitors")
-    c.execute("DROP TABLE Events")
+    cursor = conn.cursor()
+    cursor.execute("DROP TABLE Users")
+    cursor.execute("DROP TABLE Teams")
+    cursor.execute("DROP TABLE TeamsCoaches")
+    cursor.execute("DROP TABLE Competitors")
+    cursor.execute("DROP TABLE Events")
 
 
 def create_all_tables():
     """ creates all database tables"""
     conn = sqlite3.connect(DB_NAME)
-    c = conn.cursor()
-    create_table_for_teams(c, conn)
-    create_table_for_users(c, conn)
-    create_teams_coach_table(c, conn)
-    create_competitors_table(c, conn)
-    create_events_table(c, conn)
+    cursor = conn.cursor()
+    create_table_for_teams(cursor, conn)
+    create_table_for_users(cursor, conn)
+    create_teams_coach_table(cursor, conn)
+    create_competitors_table(cursor, conn)
+    create_events_table(cursor, conn)
 
 
-def create_table_for_users(c, conn):
+def create_table_for_users(cursor, conn):
     """creates the table for the teams
 
     Args:
-        c: the cursor
+        cursor: the cursor
         conn: the connection to the db
 
     """
-    c.execute(""" CREATE TABLE Users(
+    cursor.execute(""" CREATE TABLE Users(
         id INTEGER PRIMARY KEY,
         name text,
         email text,
@@ -426,15 +426,15 @@ def create_table_for_users(c, conn):
     conn.commit()
 
 
-def create_table_for_teams(c, conn):
+def create_table_for_teams(cursor, conn):
     """creates the table for the teams
 
     Args:
-        c: the cursor
+        cursor: the cursor
         conn: the connection to the db
 
     """
-    c.execute("""
+    cursor.execute("""
         CREATE TABLE Teams(
         id INTEGER PRIMARY KEY,
         team_name text,
@@ -442,16 +442,16 @@ def create_table_for_teams(c, conn):
     conn.commit()
 
 
-def create_teams_coach_table(c, conn):
+def create_teams_coach_table(cursor, conn):
     """creates the connection table for teams and coaches
 
     Args:
-        c: the cursor
+        cursor: the cursor
         conn: the connection to the db
 
     """
 
-    c.execute("""
+    cursor.execute("""
         CREATE TABLE TeamsCoaches(
         id INTEGER PRIMARY KEY,
         team_name text,
@@ -459,16 +459,16 @@ def create_teams_coach_table(c, conn):
     conn.commit()
 
 
-def create_competitors_table(c, conn):
+def create_competitors_table(cursor, conn):
     """creates the competitors table =
 
     Args:
-        c: the cursor
+        cursor: the cursor
         conn: the connection to the db
 
     """
 
-    c.execute("""
+    cursor.execute("""
         CREATE TABLE Competitors(
         id INTEGER PRIMARY KEY,
         teamname text,
@@ -479,16 +479,16 @@ def create_competitors_table(c, conn):
     conn.commit()
 
 
-def create_events_table(c, conn):
+def create_events_table(cursor, conn):
     """creates the table for the events
 
     Args:
-        c: the cursor
+        cursor: the cursor
         conn: the connection to the db
 
     """
 
-    c.execute("""
+    cursor.execute("""
         CREATE TABLE Events(
         id INTEGER PRIMARY KEY,
         eventname text,
@@ -522,21 +522,21 @@ def create_new_event(name, descr, host, location):
     print "successfully created event"
 
 
-def get_all_competitors(c):
+def get_all_competitors(cursor):
     """  gets a list of all the competitors
 
     Args:
-        c: the cursor
+        cursor: the cursor
 
     Returns:
         tuple with the names of the competitors
 
     """
-    c.execute("Select competitorname from Competitors")
+    cursor.execute("Select competitorname from Competitors")
     competitors = []
 
     while True:
-        res = c.fetchone()
+        res = cursor.fetchone()
         if res is None:
             break
         else:
@@ -544,21 +544,21 @@ def get_all_competitors(c):
     return competitors
 
 
-def get_all_events(c):
+def get_all_events(cursor):
     """  gets a list of all the events
 
     Args:
-        c: the cursor
+        cursor: the cursor
 
     Returns:
         tuple with the names of the events
 
     """
-    c.execute("Select eventname,eventdescription,hostname,location from Events")
+    cursor.execute("Select eventname,eventdescription,hostname,location from Events")
     events = []
 
     while True:
-        res = c.fetchone()
+        res = cursor.fetchone()
         if res is None:
             break
         else:
@@ -592,7 +592,8 @@ def new_competitor(teamname, competitorname, age, height, weight):
     res = cursor.fetchone()
     if res is None:
         cursor.execute("INSERT INTO {} VALUES(?, ?, ?, ?, ?)".format(
-            "Competitors(teamname,competitorname,age,height,weight)"), (teamname, competitorname, age, height, weight))
+            "Competitors(teamname,competitorname,age,height,weight)"),
+                       (teamname, competitorname, age, height, weight))
         conn.commit()
         return True
     else:  # Already in database
@@ -603,28 +604,28 @@ def new_competitor(teamname, competitorname, age, height, weight):
         return False
 
 
-def get_role(c, username):
+def get_role(cursor, username):
     """gets what is the role of the user with username
 
     Args:
-        c: the cursor
+        cursor: the cursor
         username: the username that should be checked to see if it's a competitor or coach
 
     Returns:
         the role of the user
 
     """
-    c.execute("Select role from Users where name = '{}'".format(username))
-    res = c.fetchone()
+    cursor.execute("Select role from Users where name = '{}'".format(username))
+    res = cursor.fetchone()
     print "role is " + str(res)
     return res
 
 
-def get_email_from_username(c, username):
+def get_email_from_username(cursor, username):
     """gets what is the email
 
     Args:
-        c: the cursor
+        cursor: the cursor
         conn: the connection to the db
         username: the username that should be used
 
@@ -632,8 +633,8 @@ def get_email_from_username(c, username):
         the email of the user
 
     """
-    c.execute("Select email from Users where name = '{}'".format(username))
-    res = c.fetchone()
+    cursor.execute("Select email from Users where name = '{}'".format(username))
+    res = cursor.fetchone()
     print "mail is " + str(res)
     return res
 
@@ -649,9 +650,9 @@ def get_password(username):
 
     """
     conn = sqlite3.connect(DB_NAME)
-    c = conn.cursor()
-    c.execute("Select password from Users where name = '{}'".format(username))
-    res = str(c.fetchone())
+    cursor = conn.cursor()
+    cursor.execute("Select password from Users where name = '{}'".format(username))
+    res = str(cursor.fetchone())
     return clean_up_database_str(res)
 
 
@@ -666,31 +667,31 @@ def is_coach(username):
 
     """
     conn = sqlite3.connect(DB_NAME)
-    c = conn.cursor()
-    c.execute("Select role from Users where name = '{}'".format(username))
-    res = str(c.fetchone())
+    cursor = conn.cursor()
+    cursor.execute("Select role from Users where name = '{}'".format(username))
+    res = str(cursor.fetchone())
     res = clean_up_database_str(res)
     if res == "1":
         return True
     return False
 
 
-def get_teams_of_coach(c, coach):
+def get_teams_of_coach(cursor, coach):
     """gets all the teams a coach has
 
     Args:
-        c: the cursor
+        cursor: the cursor
         coach: the name of the coach
 
     Returns:
         a list of all the teams a coach has
 
     """
-    c.execute(
+    cursor.execute(
         "Select team_name from TeamsCoaches where coach_name = '{}'".format(coach))
     teams = []
     while True:
-        res = c.fetchone()
+        res = cursor.fetchone()
         if res is None:
             break
         else:
@@ -699,11 +700,11 @@ def get_teams_of_coach(c, coach):
     return teams
 
 
-def get_competitors_of_team(c, teamname):
+def get_competitors_of_team(cursor, teamname):
     """gets all the teams a coach has
 
     Args:
-        c: the cursor
+        cursor: the cursor
         conn: the connection to the db
         teamname: the name of the team
 
@@ -711,11 +712,11 @@ def get_competitors_of_team(c, teamname):
         a list of all the competitors a team has
 
     """
-    c.execute(
+    cursor.execute(
         "Select competitorname from Competitors where teamname = '{}'".format(teamname))
     competitors = []
     while True:
-        res = c.fetchone()
+        res = cursor.fetchone()
         if res is None:
             break
         else:
@@ -732,9 +733,9 @@ def change_password(username, newpassword):
 
     """
     conn = sqlite3.connect(DB_NAME)
-    c = conn.cursor()
+    cursor = conn.cursor()
     password = cipher_text(newpassword)
-    c.execute(
+    cursor.execute(
         "update Users set password= '{}' where name = '{}'".format(
             password, username))
     conn.commit()
@@ -761,17 +762,17 @@ def matching_username_and_password(username, password):
     return False
 
 
-def clean_up_database_str(string_To_transform):
+def clean_up_database_str(string_to_transform):
     """Removes unneded chars from the string, retrieved from the database
 
     Args:
-        string_To_transform: the string that should be parsed
+        string_to_transform: the string that should be parsed
 
     Returns:
         The fixed string
 
     """
-    return string_To_transform[3:-3]
+    return string_to_transform[3:-3]
 
 
 def is_valid_email(email):
