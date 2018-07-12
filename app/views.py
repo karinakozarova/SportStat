@@ -1,48 +1,23 @@
-"""
-------------------------------------------------------------------------
-                        IMPORTS SECTION
-------------------------------------------------------------------------
-"""
-
-from flask import flash, redirect, render_template, request
-from app import app
-from wtforms import Form, TextField, validators
 import sqlite3
 import re
-
-from flask_login import login_required 
-
-# for passwords encryption
-"""
-    AES in CBC mode with a 128-bit key for encryption; using PKCS7 padding.
-    HMAC using SHA256 for authentication.
-    Initialization vectors are generated using os.urandom().
-"""
 import base64
 import cryptography
+from flask import flash, redirect, render_template, request
+from wtforms import Form, TextField, validators
+from flask_login import login_required 
+
+
 from cryptography.fernet import Fernet
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+from app import app
 
 
 # logging.basicConfig(filename='app_log.log', level=logging.DEBUG,format='%(asctime)s:%(message)s')
 
-"""
-------------------------------------------------------------------------
-                      GLOBAL VARIABLES SECTION
-------------------------------------------------------------------------
-"""
 
 DB_NAME = "test.db"
-
-
-"""
-------------------------------------------------------------------------
-                            FORMS SECTION
-------------------------------------------------------------------------
-"""
-
 
 class RegistrationForm(Form):
     name = TextField('Name:', validators=[validators.required()])
@@ -95,13 +70,6 @@ class CompetitorsForm(Form):
     teamname = TextField('Teamname:', validators=[validators.required()])
 
 
-"""
-------------------------------------------------------------------------
-                            ROUTES SECTION
-------------------------------------------------------------------------
-"""
-
-
 @app.route('/')
 @app.route('/about')
 def index():
@@ -126,15 +94,11 @@ def create_event():
         hostname = username
 
         database_password = get_password(username)
-        unciphered_text = "1"
+        unciphered_text = None
         try:
             unciphered_text = decipher_text(database_password)
             if unciphered_text == password_input:  # successfully logged in
-                conn = sqlite3.connect(DB_NAME)
-                c = conn.cursor()
                 create_new_event(
-                    c,
-                    conn,
                     eventname,
                     eventdescription,
                     hostname,
@@ -155,7 +119,7 @@ def create_event():
 def calendar():
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
-    events = get_all_events(c, conn)
+    events = get_all_events(c)
     return render_template("calendar.html", events=events)
 
 
@@ -186,7 +150,6 @@ def team_stats():
                     logged_in=True,
                     competitors=get_competitors_of_team(
                         c,
-                        conn,
                         teamname))
             else:
                 pass
@@ -219,7 +182,7 @@ def coach_teams():
             if unciphered_text == password_input:  # successfully logged in
                 conn = sqlite3.connect(DB_NAME)
                 c = conn.cursor()
-                teams = get_teams_of_coach(c, conn, username)
+                teams = get_teams_of_coach(c, username)
                 return render_template(
                     "coach_teams.html", logged_in=True, teams=teams)
             else:
@@ -259,7 +222,7 @@ def authentication():
 def competitor():
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
-    competitors = get_all_competitors(c, conn)
+    competitors = get_all_competitors(c)
     return render_template('competitor.html', competitors=competitors)
 
 
@@ -276,8 +239,6 @@ def insert_info():
         weight = request.form['weight']
         teamname = request.form['teamname']
 
-        conn = sqlite3.connect(DB_NAME)
-        c = conn.cursor()
 
         database_password = get_password(username)
         unciphered_text = None
@@ -289,7 +250,7 @@ def insert_info():
             # that's the right password
             print "Right credentials"
             competitor = new_competitor(
-                c, conn, teamname, username, age, height, weight)
+                teamname, username, age, height, weight)
             if competitor:
                 success = "Successfully registered this competitor!"
             else:
@@ -382,8 +343,8 @@ def login():
             conn = sqlite3.connect(DB_NAME)
             c = conn.cursor()
             # return coach_or_competitor(username)
-            role = get_role(c, conn, username)
-            email = get_email_from_username(c, conn, username)
+            role = get_role(c, username)
+            email = get_email_from_username(c, username)
             return signed_in(role, username, email)
         else:
             error = 'Invalid Credentials. Please try again.'
@@ -419,24 +380,10 @@ def register():
     return render_template('register.html', form=form)
 
 
-"""
-------------------------------------------------------------------------
-                            ERROR HANDLING SECTION
-------------------------------------------------------------------------
-"""
-
-
 @app.errorhandler(404)
 def page_not_found(error_to_handle):
     print error_to_handle
     return render_template('404.html'), 404
-
-
-"""
-------------------------------------------------------------------------
-                            DATABASE TABLES SECTION
-------------------------------------------------------------------------
-"""
 
 
 def drop_all_tables():
@@ -552,19 +499,11 @@ def create_events_table(c, conn):
     print "Created evenets table.."
 
 
-"""
-------------------------------------------------------------------------
-                        DATABASE QUERIES SECTION
-------------------------------------------------------------------------
-"""
 
-
-def create_new_event(c, conn, name, descr, host, location):
+def create_new_event(name, descr, host, location):
     """  gets a list of all the competitors
 
     Args:
-        c: the cursor
-        conn: the connection to the db
         name: event name
         descr: description of the event
         host: nme of the event host(coach)
@@ -574,20 +513,20 @@ def create_new_event(c, conn, name, descr, host, location):
         tuple with the names of the events
 
     """
-
-    c.execute("INSERT INTO {} VALUES(?, ?, ?, ?)".format(
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
+    cursor.execute("INSERT INTO {} VALUES(?, ?, ?, ?)".format(
         "Events(eventname,eventdescription,hostname,location)"), (name, descr, host, location))
 
     conn.commit()
     print "successfully created event"
 
 
-def get_all_competitors(c, conn):
+def get_all_competitors(c):
     """  gets a list of all the competitors
 
     Args:
         c: the cursor
-        conn: the connection to the db
 
     Returns:
         tuple with the names of the competitors
@@ -605,12 +544,11 @@ def get_all_competitors(c, conn):
     return competitors
 
 
-def get_all_events(c, conn):
+def get_all_events(c):
     """  gets a list of all the events
 
     Args:
         c: the cursor
-        conn: the connection to the db
 
     Returns:
         tuple with the names of the events
@@ -630,13 +568,11 @@ def get_all_events(c, conn):
     return events
 
 
-def new_competitor(c, conn, teamname, competitorname, age, height, weight):
+def new_competitor(teamname, competitorname, age, height, weight):
     """ Creates a new competitor and adds him to the database.
         If competitor already exists - updates some values.
 
     Args:
-        c: the cursor
-        conn: the connection to the db
         teamname: the name that the competitor is registered at
         competitorname: the name of the competitor
         age: the age of the competitor
@@ -647,30 +583,31 @@ def new_competitor(c, conn, teamname, competitorname, age, height, weight):
         True if created a competitor, False if updated a competitor
 
     """
-    c.execute(
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
+    cursor.execute(
         "Select id from Competitors where teamname = '{}' and competitorname = '{}'".format(
             teamname,
             competitorname))
-    res = c.fetchone()
+    res = cursor.fetchone()
     if res is None:
-        c.execute("INSERT INTO {} VALUES(?, ?, ?, ?, ?)".format(
+        cursor.execute("INSERT INTO {} VALUES(?, ?, ?, ?, ?)".format(
             "Competitors(teamname,competitorname,age,height,weight)"), (teamname, competitorname, age, height, weight))
         conn.commit()
         return True
     else:  # Already in database
-        c.execute("""update Competitors set age = '{}',height = '{}',
+        cursor.execute("""update Competitors set age = '{}',height = '{}',
             weight = '{}' where teamname = '{}' and competitorname = '{}'"""
-                  .format(age, height, weight, teamname, competitorname))
+                       .format(age, height, weight, teamname, competitorname))
         conn.commit()
         return False
 
 
-def get_role(c, conn, username):
+def get_role(c, username):
     """gets what is the role of the user with username
 
     Args:
         c: the cursor
-        conn: the connection to the db
         username: the username that should be checked to see if it's a competitor or coach
 
     Returns:
@@ -683,7 +620,7 @@ def get_role(c, conn, username):
     return res
 
 
-def get_email_from_username(c, conn, username):
+def get_email_from_username(c, username):
     """gets what is the email
 
     Args:
@@ -738,12 +675,11 @@ def is_coach(username):
     return False
 
 
-def get_teams_of_coach(c, conn, coach):
+def get_teams_of_coach(c, coach):
     """gets all the teams a coach has
 
     Args:
         c: the cursor
-        conn: the connection to the db
         coach: the name of the coach
 
     Returns:
@@ -763,7 +699,7 @@ def get_teams_of_coach(c, conn, coach):
     return teams
 
 
-def get_competitors_of_team(c, conn, teamname):
+def get_competitors_of_team(c, teamname):
     """gets all the teams a coach has
 
     Args:
@@ -825,13 +761,6 @@ def matching_username_and_password(username, password):
     return False
 
 
-"""
-------------------------------------------------------------------------
-                    HELPING FUNCTIONS SECTION
-------------------------------------------------------------------------
-"""
-
-
 def clean_up_database_str(string_To_transform):
     """Removes unneded chars from the string, retrieved from the database
 
@@ -856,8 +785,7 @@ def is_valid_email(email):
 
     """
     regex = r'^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,4})$'
-    is_valid_email = re.match(regex, email)
-    if is_valid_email is None:
+    if re.match(regex, email) is None:
         return False
     return True
 
