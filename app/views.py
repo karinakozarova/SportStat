@@ -4,13 +4,13 @@
 ------------------------------------------------------------------------
 """
 
-from flask import Flask, render_template, redirect, url_for, request, flash
+from flask import flash, redirect, render_template, request
 from app import app
-from wtforms import Form, TextField, TextAreaField, validators, StringField, SubmitField
+from wtforms import Form, TextField, validators
 import sqlite3
 import re
 
-from flask_login import current_user, LoginManager, login_user, logout_user, login_required
+from flask_login import login_required, login_user
 
 # for passwords encryption
 """
