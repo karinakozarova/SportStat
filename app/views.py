@@ -1,10 +1,10 @@
-""" 
+"""
 ------------------------------------------------------------------------
                         IMPORTS SECTION
 ------------------------------------------------------------------------
 """
 
-from flask import Flask,render_template, redirect, url_for, request, flash
+from flask import Flask, render_template, redirect, url_for, request, flash
 from app import app
 from wtforms import Form, TextField, TextAreaField, validators, StringField, SubmitField
 import logging
@@ -15,7 +15,6 @@ from flask_login import current_user, LoginManager, login_user, logout_user, log
 
 # for passwords encryption
 """
-
     AES in CBC mode with a 128-bit key for encryption; using PKCS7 padding.
     HMAC using SHA256 for authentication.
     Initialization vectors are generated using os.urandom().
@@ -31,7 +30,7 @@ from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
 # logging.basicConfig(filename='app_log.log', level=logging.DEBUG,format='%(asctime)s:%(message)s')
 
-""" 
+"""
 ------------------------------------------------------------------------
                       GLOBAL VARIABLES SECTION
 ------------------------------------------------------------------------
@@ -45,64 +44,106 @@ login_manager.init_app(app)
 
 database_name = "test.db"
 
+
 @login_manager.user_loader
 def load_user(user_id):
     return None
 
 
-
-""" 
+"""
 ------------------------------------------------------------------------
                             FORMS SECTION
 ------------------------------------------------------------------------
 """
+
+
 class RegistrationForm(Form):
     name = TextField('Name:', validators=[validators.required()])
-    email = TextField('Email:', validators=[validators.required(), validators.Length(min=6, max=35)])
-    password = TextField('Password:', validators=[validators.required(), validators.Length(min=3, max=35)])
- 
+    email = TextField(
+        'Email:',
+        validators=[
+            validators.required(),
+            validators.Length(
+                min=6,
+                max=35)])
+    password = TextField(
+        'Password:',
+        validators=[
+            validators.required(),
+            validators.Length(
+                min=3,
+                max=35)])
+
+
 class TeamsForm(Form):
     name = TextField('Name:', validators=[validators.required()])
-    coach = TextField('Coach:',validators=[validators.required()])
-    country = TextField('Country:',validators=[validators.required()])
+    coach = TextField('Coach:', validators=[validators.required()])
+    country = TextField('Country:', validators=[validators.required()])
+
 
 class CompetitorsForm(Form):
     name = TextField('Name:', validators=[validators.required()])
-    email = TextField('Email:',validators=[validators.required()])
-    age = TextField('Age:',validators=[validators.required(),validators.Length(min=1, max=3)])
-    weight = TextField('Weight:',validators=[validators.required(),validators.Length(min=2, max=4)])
-    height = TextField('Height:',validators=[validators.required(),validators.Length(min=2, max=4)])
-    teamname = TextField('Teamname:',validators=[validators.required()])
+    email = TextField('Email:', validators=[validators.required()])
+    age = TextField(
+        'Age:',
+        validators=[
+            validators.required(),
+            validators.Length(
+                min=1,
+                max=3)])
+    weight = TextField(
+        'Weight:',
+        validators=[
+            validators.required(),
+            validators.Length(
+                min=2,
+                max=4)])
+    height = TextField(
+        'Height:',
+        validators=[
+            validators.required(),
+            validators.Length(
+                min=2,
+                max=4)])
+    teamname = TextField('Teamname:', validators=[validators.required()])
 
 
-""" 
+"""
 ------------------------------------------------------------------------
                             CLASSES SECTION
 ------------------------------------------------------------------------
 """
+
+
 class User:
     is_authenticated = False
     is_active = True
     is_anonymous = True
+
     def get_id(self):
-        return str(1).encode("utf-8").decode("utf-8") 
+        return str(1).encode("utf-8").decode("utf-8")
 
     def __init__(self):
         pass
 
-""" 
+
+"""
 ------------------------------------------------------------------------
                             ROUTES SECTION
 ------------------------------------------------------------------------
 """
+
+
 @app.route('/')
 @app.route('/about')
 def index():
     return render_template("index.html")
 
+
 @app.route('/stream')
 def stream():
-   return render_template("stream.html")
+    return render_template("stream.html")
+
 
 @login_required
 @app.route('/new_event', methods=['GET', 'POST'])
@@ -123,54 +164,77 @@ def create_event():
             if unciphered_text == password_input:  # successfully logged in
                 conn = sqlite3.connect(database_name)
                 c = conn.cursor()
-                create_event(c,conn,eventname,eventdescription,hostname,location)
-                return render_template("new_event.html", logged_in = True)
+                create_event(
+                    c,
+                    conn,
+                    eventname,
+                    eventdescription,
+                    hostname,
+                    location)
+                return render_template("new_event.html", logged_in=True)
             else:
-                error = 'Invalid Credentials. Please try again.' 
+                error = 'Invalid Credentials. Please try again.'
         except cryptography.fernet.InvalidToken:
             flash('Not the right password for that username')
-            return render_template('new_event.html', error='Not the right password for that username',not_logged_in = True)
-    return render_template("new_event.html",not_logged_in = True)
+            return render_template(
+                'new_event.html',
+                error='Not the right password for that username',
+                not_logged_in=True)
+    return render_template("new_event.html", not_logged_in=True)
+
 
 @app.route('/calendar')
 def calendar():
-   conn = sqlite3.connect(database_name)
-   c = conn.cursor()
-   events = get_all_events(c,conn)
-   return render_template("calendar.html",events = events)
+    conn = sqlite3.connect(database_name)
+    c = conn.cursor()
+    events = get_all_events(c, conn)
+    return render_template("calendar.html", events=events)
+
 
 @login_required
 @app.route('/pay')
 def payment():
     return render_template("pay.html")
 
+
 @login_required
 @app.route('/team_stats', methods=['GET', 'POST'])
 def team_stats():
-   if request.method == 'POST':
-       username = request.form['username']
-       password_input = request.form['password']
-       teamname = request.form['teamname']
+    if request.method == 'POST':
+        username = request.form['username']
+        password_input = request.form['password']
+        teamname = request.form['teamname']
 
-       database_password = get_password(username)
-       unciphered_text = "1"
-       try:
-           unciphered_text = decipher_text(database_password)
-           if unciphered_text == password_input:  # successfully logged in
-               conn = sqlite3.connect(database_name)
-               c = conn.cursor()
+        database_password = get_password(username)
+        unciphered_text = "1"
+        try:
+            unciphered_text = decipher_text(database_password)
+            if unciphered_text == password_input:  # successfully logged in
+                conn = sqlite3.connect(database_name)
+                c = conn.cursor()
 
-               return render_template("team_stats.html", logged_in = True, competitors = get_competitors_of_team(c,conn,teamname))
-           else:
-               error = 'Invalid Credentials. Please try again.' 
-       except cryptography.fernet.InvalidToken:
-           flash('Not the right password for that username')
-           return render_template('team_stats.html', error='Not the right password for that username',logged_in = True)
-   return render_template("team_stats.html",not_logged_in = True)
+                return render_template(
+                    "team_stats.html",
+                    logged_in=True,
+                    competitors=get_competitors_of_team(
+                        c,
+                        conn,
+                        teamname))
+            else:
+                error = 'Invalid Credentials. Please try again.'
+        except cryptography.fernet.InvalidToken:
+            flash('Not the right password for that username')
+            return render_template(
+                'team_stats.html',
+                error='Not the right password for that username',
+                logged_in=True)
+    return render_template("team_stats.html", not_logged_in=True)
+
 
 @app.route('/forgotten_password')
 def render_underconstruction():
     return render_template('under_development.html')
+
 
 @app.route('/')
 @app.route('/coach_teams', methods=['GET', 'POST'])
@@ -187,14 +251,18 @@ def coach_teams():
             if unciphered_text == password_input:  # successfully logged in
                 conn = sqlite3.connect(database_name)
                 c = conn.cursor()
-                teams = get_teams_of_coach(c,conn,username)
-                return render_template("coach_teams.html", logged_in = True, teams = teams)
+                teams = get_teams_of_coach(c, conn, username)
+                return render_template(
+                    "coach_teams.html", logged_in=True, teams=teams)
             else:
-                error = 'Invalid Credentials. Please try again.' 
+                error = 'Invalid Credentials. Please try again.'
         except cryptography.fernet.InvalidToken:
             flash('Not the right password for that username')
-            return render_template('coach_teams.html', error='Not the right password for that username',logged_in = True)
-    return render_template("coach_teams.html",not_logged_in = True)
+            return render_template(
+                'coach_teams.html',
+                error='Not the right password for that username',
+                logged_in=True)
+    return render_template("coach_teams.html", not_logged_in=True)
 
 
 @login_required
@@ -212,8 +280,8 @@ def authentication():
 
         if str(database_password) == str(oldpassword):
             print "Correct login credentials"
-            change_password(name,password)
-        else: 
+            change_password(name, password)
+        else:
             print "Wrong login credentials"
     return render_template("change_password.html")
 
@@ -223,12 +291,12 @@ def authentication():
 def competitor():
     conn = sqlite3.connect(database_name)
     c = conn.cursor()
-    competitors = get_all_competitors(c,conn)
-    return render_template('competitor.html',competitors = competitors)
+    competitors = get_all_competitors(c, conn)
+    return render_template('competitor.html', competitors=competitors)
 
 
 @app.route('/competitors_information', methods=['GET', 'POST'])
-def insert_info(name = "Guest", email = "none"):
+def insert_info(name="Guest", email="none"):
 
     error = None
     success = None
@@ -252,7 +320,8 @@ def insert_info(name = "Guest", email = "none"):
         if unciphered_text == password_input:
             # that's the right password
             print "Right credentials"
-            competitor = new_competitor(c,conn,teamname,username,age,height,weight)
+            competitor = new_competitor(
+                c, conn, teamname, username, age, height, weight)
             if competitor:
                 success = "Successfully registered this competitor!"
             else:
@@ -260,8 +329,11 @@ def insert_info(name = "Guest", email = "none"):
 
         else:
             error = 'Invalid Credentials. Please try again.'
-    
-    return render_template('competitors_information.html', error = error, success = success)
+
+    return render_template(
+        'competitors_information.html',
+        error=error,
+        success=success)
 
 
 @app.route('/teams')
@@ -281,7 +353,12 @@ def test_route():
         else:
             teams.append(res)
             names.append(res[0])
-    return render_template('teams.html', teams=teams,names=names,countries = countries,length_teams = len(teams))
+    return render_template(
+        'teams.html',
+        teams=teams,
+        names=names,
+        countries=countries,
+        length_teams=len(teams))
 
 
 @login_required
@@ -298,16 +375,22 @@ def register_team():
         coach = request.form['coach']
 
         if form.validate() and is_coach(coach):
-            c.execute("INSERT INTO {} VALUES(?, ?)".format("Teams(team_name,country)"), (name,country))
-            c.execute("INSERT INTO {} VALUES(?, ?)".format("TeamsCoaches(team_name,coach_name)"), (name,coach))
+            c.execute("INSERT INTO {} VALUES(?, ?)".format(
+                "Teams(team_name,country)"), (name, country))
+            c.execute("INSERT INTO {} VALUES(?, ?)".format(
+                "TeamsCoaches(team_name,coach_name)"), (name, coach))
             conn.commit()
-            return render_template('succesfully_registered_team.html',teamname = name,coach = coach, country = country)
+            return render_template(
+                'succesfully_registered_team.html',
+                teamname=name,
+                coach=coach,
+                country=country)
         elif is_coach(coach) == False:
             flash('Error: Not a valid coach.')
         else:
             flash('Error: All the form fields are required.')
     return render_template('register_team.html', form=form)
-  
+
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -324,20 +407,21 @@ def login():
             print database_password, unciphered_text
         except cryptography.fernet.InvalidToken:
             flash('Not the right password for that username')
-            return render_template('login.html', error='Not the right password for that username')
+            return render_template(
+                'login.html',
+                error='Not the right password for that username')
         if unciphered_text == password_input:
             user = User()
             login_user(user)
             conn = sqlite3.connect(database_name)
             c = conn.cursor()
             # return coach_or_competitor(username)
-            role = get_role(c,conn,username)
-            email = get_email_from_username(c,conn,username)
-            return signed_in(role,username, email)
+            role = get_role(c, conn, username)
+            email = get_email_from_username(c, conn, username)
+            return signed_in(role, username, email)
         else:
-            error = 'Invalid Credentials. Please try again.' 
+            error = 'Invalid Credentials. Please try again.'
     return render_template('login.html', error=error)
- 
 
 
 @app.route("/register", methods=['GET', 'POST'])
@@ -352,15 +436,16 @@ def register():
         name = request.form['name']
         password = request.form['password']
         email = request.form['email']
-        role = request.form['options'] # coach - 1, competitor - 2
+        role = request.form['options']  # coach - 1, competitor - 2
 
         ciphered_password = cipher_text(password)
 
-        if form.validate() and is_valid_email(email) == True:
-            c.execute("INSERT INTO {} VALUES(?, ?, ?, ?)".format("Users(name,email,password,role)"), (name,email,ciphered_password,role))
+        if form.validate() and is_valid_email(email):
+            c.execute("INSERT INTO {} VALUES(?, ?, ?, ?)".format(
+                "Users(name,email,password,role)"), (name, email, ciphered_password, role))
             conn.commit()
-            
-            return signed_in(role,name,email)
+
+            return signed_in(role, name, email)
         elif is_valid_email == False:
             flash('Error: That is not a valid email address')
         else:
@@ -368,21 +453,25 @@ def register():
     return render_template('register.html', form=form)
 
 
-
-""" 
+"""
 ------------------------------------------------------------------------
                             ERROR HANDLING SECTION
 ------------------------------------------------------------------------
 """
+
+
 @app.errorhandler(404)
 def page_not_found(e):
     return render_template('404.html'), 404
 
-""" 
+
+"""
 ------------------------------------------------------------------------
                             DATABASE TABLES SECTION
 ------------------------------------------------------------------------
 """
+
+
 def drop_all_tables():
     """ drops all database tables"""
     conn = sqlite3.connect(database_name)
@@ -393,23 +482,25 @@ def drop_all_tables():
     c.execute("DROP TABLE Competitors")
     c.execute("DROP TABLE Events")
 
+
 def create_all_tables():
     """ creates all database tables"""
     conn = sqlite3.connect(database_name)
     c = conn.cursor()
-    create_table_for_teams(c,conn)
-    create_table_for_users(c,conn)
-    create_teams_coach_table(c,conn)
-    create_competitors_table(c,conn)
-    create_events_table(c,conn)
+    create_table_for_teams(c, conn)
+    create_table_for_users(c, conn)
+    create_teams_coach_table(c, conn)
+    create_competitors_table(c, conn)
+    create_events_table(c, conn)
 
-def create_table_for_users(c,conn):
+
+def create_table_for_users(c, conn):
     """creates the table for the teams
-    
+
     Args:
         c: the cursor
         conn: the connection to the db
-        
+
     """
     c.execute(""" CREATE TABLE Users(
         id INTEGER PRIMARY KEY,
@@ -420,15 +511,14 @@ def create_table_for_users(c,conn):
     )""")
     conn.commit()
 
-   
 
-def create_table_for_teams(c,conn):
+def create_table_for_teams(c, conn):
     """creates the table for the teams
 
     Args:
         c: the cursor
         conn: the connection to the db
-        
+
     """
     c.execute("""
         CREATE TABLE Teams(
@@ -438,13 +528,13 @@ def create_table_for_teams(c,conn):
     conn.commit()
 
 
-def create_teams_coach_table(c,conn):
+def create_teams_coach_table(c, conn):
     """creates the connection table for teams and coaches
 
     Args:
         c: the cursor
         conn: the connection to the db
-        
+
     """
 
     c.execute("""
@@ -455,13 +545,13 @@ def create_teams_coach_table(c,conn):
     conn.commit()
 
 
-def create_competitors_table(c,conn):
+def create_competitors_table(c, conn):
     """creates the competitors table =
 
     Args:
         c: the cursor
         conn: the connection to the db
-        
+
     """
 
     c.execute("""
@@ -474,13 +564,14 @@ def create_competitors_table(c,conn):
         weight text)""")
     conn.commit()
 
-def create_events_table(c,conn):
+
+def create_events_table(c, conn):
     """creates the table for the events
 
     Args:
         c: the cursor
         conn: the connection to the db
-        
+
     """
 
     c.execute("""
@@ -494,13 +585,14 @@ def create_events_table(c,conn):
     print "Created evenets table.."
 
 
-""" 
+"""
 ------------------------------------------------------------------------
                         DATABASE QUERIES SECTION
 ------------------------------------------------------------------------
 """
 
-def create_event(c,conn,name,description,host,location):
+
+def create_event(c, conn, name, description, host, location):
     """  gets a list of all the competitors
 
     Args:
@@ -510,24 +602,26 @@ def create_event(c,conn,name,description,host,location):
         description: description of the event
         host: nme of the event host(coach)
         location: the address of the event
-    
+
     Returns:
         tuple with the names of the events
 
-    """   
+    """
 
-    c.execute("INSERT INTO {} VALUES(?, ?, ?, ?)"
-        .format("Events(eventname,eventdescription,hostname,location)"), (name,description,host,location))
- 
+    c.execute("INSERT INTO {} VALUES(?, ?, ?, ?)" .format(
+        "Events(eventname,eventdescription,hostname,location)"), (name, description, host, location))
+
     conn.commit()
     print "successfully created event"
-def get_all_competitors(c,conn):
+
+
+def get_all_competitors(c, conn):
     """  gets a list of all the competitors
 
     Args:
         c: the cursor
         conn: the connection to the db
-    
+
     Returns:
         tuple with the names of the competitors
 
@@ -543,13 +637,14 @@ def get_all_competitors(c,conn):
             competitors.append(res[0])
     return competitors
 
-def get_all_events(c,conn):
+
+def get_all_events(c, conn):
     """  gets a list of all the events
 
     Args:
         c: the cursor
         conn: the connection to the db
-    
+
     Returns:
         tuple with the names of the events
 
@@ -562,12 +657,14 @@ def get_all_events(c,conn):
         if res is None:
             break
         else:
-            string_to_print =  "Event name: " + res[0] +"\n" + "\nEvent description: " + res[1]+" \n" + "\nHosted by:  " + res[2] + "\n" +"\n Location: " + res[3] + "\n"
+            string_to_print = "Event name: " + res[0] + "\n" + "\nEvent description: " + \
+                res[1] + " \n" + "\nHosted by:  " + res[2] + "\n" + "\n Location: " + res[3] + "\n"
             events.append(string_to_print)
     return events
 
-def new_competitor(c,conn,teamname,competitorname,age,height,weight):
-    """ Creates a new competitor and adds him to the database. 
+
+def new_competitor(c, conn, teamname, competitorname, age, height, weight):
+    """ Creates a new competitor and adds him to the database.
         If competitor already exists - updates some values.
 
     Args:
@@ -578,27 +675,32 @@ def new_competitor(c,conn,teamname,competitorname,age,height,weight):
         age: the age of the competitor
         height: the height of the competito
         weight: the weight of the competito
-    
+
     Returns:
         True if created a competitor, False if updated a competitor
 
     """
-    c.execute("Select id from Competitors where teamname = '{}' and competitorname = '{}'".format(teamname,competitorname))
+    c.execute(
+        "Select id from Competitors where teamname = '{}' and competitorname = '{}'".format(
+            teamname,
+            competitorname))
     res = c.fetchone()
-    if res is None : 
-        c.execute("INSERT INTO {} VALUES(?, ?, ?, ?, ?)".format("Competitors(teamname,competitorname,age,height,weight)"), (teamname,competitorname,age,height,weight))
+    if res is None:
+        c.execute("INSERT INTO {} VALUES(?, ?, ?, ?, ?)".format(
+            "Competitors(teamname,competitorname,age,height,weight)"), (teamname, competitorname, age, height, weight))
         conn.commit()
         return True
-    else: # Already in database
+    else:  # Already in database
         c.execute("""update Competitors set age = '{}',height = '{}',
             weight = '{}' where teamname = '{}' and competitorname = '{}'"""
-            .format(age,height,weight,teamname,competitorname))
-        conn.commit() 
+                  .format(age, height, weight, teamname, competitorname))
+        conn.commit()
         return False
 
-def get_role(c,conn,username):
+
+def get_role(c, conn, username):
     """gets what is the role of the user with username
-    
+
     Args:
         c: the cursor
         conn: the connection to the db
@@ -611,41 +713,43 @@ def get_role(c,conn,username):
     c.execute("Select role from Users where name = '{}'".format(username))
     res = c.fetchone()
     print "role is " + str(res)
-    return res 
+    return res
 
 
-def get_email_from_username(c,conn,username):
-    """gets what is the email 
-    
+def get_email_from_username(c, conn, username):
+    """gets what is the email
+
     Args:
         c: the cursor
         conn: the connection to the db
         username: the username that should be used
-    
+
     Returns:
-        the email of the user    
+        the email of the user
 
     """
     c.execute("Select email from Users where name = '{}'".format(username))
     res = c.fetchone()
     print "mail is " + str(res)
-    return res 
+    return res
+
 
 def get_password(username):
     """gets the password of a user
 
     Args:
         username: the username for whose password we are looking
-    
+
     Returns:
         the password stored in the database
-        
+
     """
     conn = sqlite3.connect(database_name)
     c = conn.cursor()
     c.execute("Select password from Users where name = '{}'".format(username))
     res = str(c.fetchone())
     return clean_up_database_str(res)
+
 
 def is_coach(username):
     """checks if the given username is a coach
@@ -655,29 +759,32 @@ def is_coach(username):
 
     Returns:
         True if is a coach, False otherwise
-        
+
     """
     conn = sqlite3.connect(database_name)
     c = conn.cursor()
     c.execute("Select role from Users where name = '{}'".format(username))
     res = str(c.fetchone())
     res = clean_up_database_str(res)
-    if res == "1": return True
+    if res == "1":
+        return True
     return False
 
-def get_teams_of_coach(c,conn,coach):
+
+def get_teams_of_coach(c, conn, coach):
     """gets all the teams a coach has
 
     Args:
         c: the cursor
         conn: the connection to the db
         coach: the name of the coach
-    
+
     Returns:
         a list of all the teams a coach has
 
     """
-    c.execute("Select team_name from TeamsCoaches where coach_name = '{}'".format(coach))
+    c.execute(
+        "Select team_name from TeamsCoaches where coach_name = '{}'".format(coach))
     teams = []
     while True:
         res = c.fetchone()
@@ -688,19 +795,21 @@ def get_teams_of_coach(c,conn,coach):
             teams.append(res[0])
     return teams
 
-def get_competitors_of_team(c,conn,teamname):
+
+def get_competitors_of_team(c, conn, teamname):
     """gets all the teams a coach has
 
     Args:
         c: the cursor
         conn: the connection to the db
         teamname: the name of the team
-    
+
     Returns:
         a list of all the competitors a team has
 
     """
-    c.execute("Select competitorname from Competitors where teamname = '{}'".format(teamname))
+    c.execute(
+        "Select competitorname from Competitors where teamname = '{}'".format(teamname))
     competitors = []
     while True:
         res = c.fetchone()
@@ -710,22 +819,26 @@ def get_competitors_of_team(c,conn,teamname):
             competitors.append(res[0])
             print res[0]
     return competitors
+
+
 def change_password(username, newpassword):
     """changes password in the database of a selected user
 
     Args:
         username: the username that should be checked
-        
-    """ 
+
+    """
     conn = sqlite3.connect(database_name)
-    c = conn.cursor() 
+    c = conn.cursor()
     password = cipher_text(newpassword)
-    c.execute("update Users set password= '{}' where name = '{}'".format(password,username))
+    c.execute(
+        "update Users set password= '{}' where name = '{}'".format(
+            password, username))
     conn.commit()
     print "Successfully changed the password"
 
 
-def matching_username_and_password(username,password):
+def matching_username_and_password(username, password):
     """chekcs if the given password matches the username
 
     Args:
@@ -740,16 +853,18 @@ def matching_username_and_password(username,password):
     current_psswd = get_password(username)
     password = cipher_text(password)
 
-    if current_psswd == password: # passwords match
+    if current_psswd == password:  # passwords match
         return True
     return False
 
 
-""" 
+"""
 ------------------------------------------------------------------------
                     HELPING FUNCTIONS SECTION
 ------------------------------------------------------------------------
 """
+
+
 def clean_up_database_str(str):
     """Removes unneded chars from the string, retrieved from the database
 
@@ -760,7 +875,8 @@ def clean_up_database_str(str):
         The fixed string
 
     """
-    return str[3:-3] 
+    return str[3:-3]
+
 
 def is_valid_email(email):
     """checks email against regex
@@ -790,7 +906,8 @@ def cipher_text(text_to_cipher):
 
     """
     f = get_fernet_key()
-    return f.encrypt(string_to_bytes(text_to_cipher))   
+    return f.encrypt(string_to_bytes(text_to_cipher))
+
 
 def decipher_text(text_to_decipher):
     """decipers a string
@@ -804,6 +921,7 @@ def decipher_text(text_to_decipher):
     """
     f = get_fernet_key()
     return f.decrypt(string_to_bytes(text_to_decipher))
+
 
 def get_fernet_key():
     """gets an instance of a class that handles salting and encryption of passwords
@@ -825,6 +943,7 @@ def get_fernet_key():
     key = base64.urlsafe_b64encode(kdf.derive(password))
     return Fernet(key)
 
+
 def string_to_bytes(text):
     """converts a string to bytes
 
@@ -837,6 +956,7 @@ def string_to_bytes(text):
     """
     return str.encode(str(text))
 
+
 def coach_or_competitor(username):
     """converts a string to bytes
 
@@ -847,18 +967,21 @@ def coach_or_competitor(username):
         renders the competiotr template if user is comeptitor or the coach one if coach
 
     """
-    if is_coach(username) == True:
+    if is_coach(username):
         print "This user is a coach"
-        return render_template("signed_in.html",loggedin = True)
+        return render_template("signed_in.html", loggedin=True)
     else:
         print "This user is a competitor"
-        return render_template("competitor.html", loggedin = True) 
+        return render_template("competitor.html", loggedin=True)
+
 
 def clean_database():
     """creates db from scratch"""
     drop_all_tables()
     create_all_tables()
-def signed_in(role,name,email):
+
+
+def signed_in(role, name, email):
     """signs in user
 
     Args:
@@ -874,4 +997,9 @@ def signed_in(role,name,email):
         redirect_code = 302
         return redirect("http://127.0.0.1:5000/competitors_information")
     else:
-        return render_template("signed_in.html", name = name, email = email,verify = True,coach = True)
+        return render_template(
+            "signed_in.html",
+            name=name,
+            email=email,
+            verify=True,
+            coach=True)
