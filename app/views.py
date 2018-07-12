@@ -7,7 +7,6 @@
 from flask import Flask, render_template, redirect, url_for, request, flash
 from app import app
 from wtforms import Form, TextField, TextAreaField, validators, StringField, SubmitField
-import logging
 import sqlite3
 import re
 
@@ -20,7 +19,6 @@ from flask_login import current_user, LoginManager, login_user, logout_user, log
     Initialization vectors are generated using os.urandom().
 """
 import base64
-import os
 import cryptography
 from cryptography.fernet import Fernet
 from cryptography.hazmat.backends import default_backend
@@ -143,7 +141,7 @@ def create_event():
                     location)
                 return render_template("new_event.html", logged_in=True)
             else:
-                error = 'Invalid Credentials. Please try again.'
+                pass
         except cryptography.fernet.InvalidToken:
             flash('Not the right password for that username')
             return render_template(
@@ -191,7 +189,7 @@ def team_stats():
                         conn,
                         teamname))
             else:
-                error = 'Invalid Credentials. Please try again.'
+                pass
         except cryptography.fernet.InvalidToken:
             flash('Not the right password for that username')
             return render_template(
@@ -225,7 +223,7 @@ def coach_teams():
                 return render_template(
                     "coach_teams.html", logged_in=True, teams=teams)
             else:
-                error = 'Invalid Credentials. Please try again.'
+                pass
         except cryptography.fernet.InvalidToken:
             flash('Not the right password for that username')
             return render_template(
@@ -240,7 +238,7 @@ def coach_teams():
 def authentication():
     if request.method == 'POST':
         conn = sqlite3.connect(DB_NAME)
-        c = conn.cursor()
+        conn.cursor()
 
         name = request.form['username']
         oldpassword = request.form['oldpassword']
@@ -761,7 +759,7 @@ def get_teams_of_coach(c, conn, coach):
         if res is None:
             break
         else:
-            string_to_print = res[0] + ",coached by " + coach
+            res[0] + ",coached by " + coach
             teams.append(res[0])
     return teams
 
@@ -964,7 +962,6 @@ def signed_in(role, name, email):
 
     """
     if role == str(2):
-        redirect_code = 302
         return redirect("http://127.0.0.1:5000/competitors_information")
     else:
         return render_template(
